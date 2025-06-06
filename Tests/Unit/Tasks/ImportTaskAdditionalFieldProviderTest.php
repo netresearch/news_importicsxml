@@ -35,7 +35,7 @@ class ImportTaskAdditionalFieldProviderTest extends UnitTestCase
      *
      * @dataProvider propertyValidationDataProvider
      */
-    public function propertyValidation($data, $result)
+    public function propertyValidation($data, $result): void
     {
         $mockedSchedulerController = $this->getAccessibleMock(SchedulerModuleController::class,
             ['dummy'], [], '', false);

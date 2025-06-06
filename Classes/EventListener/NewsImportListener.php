@@ -18,7 +18,7 @@ use GeorgRinger\News\Event\NewsImportPostHydrateEvent;
  */
 class NewsImportListener
 {
-    public function __invoke(NewsImportPostHydrateEvent $event)
+    public function __invoke(NewsImportPostHydrateEvent $event): void
     {
         $importData = $event->getImportItem();
         if (is_array($importData['_dynamicData']['news_importicsxml'] ?? null)) {

@@ -9,6 +9,8 @@
 
 declare(strict_types=1);
 
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
+
 $fields = [
     'news_import_data' => [
         'exclude' => true,
@@ -23,5 +25,5 @@ $fields = [
     ],
 ];
 
-TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns('tx_news_domain_model_news', $fields);
-TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes('tx_news_domain_model_news', 'news_import_data');
+ExtensionManagementUtility::addTCAcolumns('tx_news_domain_model_news', $fields);
+ExtensionManagementUtility::addToAllTCAtypes('tx_news_domain_model_news', 'news_import_data');

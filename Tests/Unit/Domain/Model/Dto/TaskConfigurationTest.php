@@ -45,7 +45,7 @@ class TaskConfigurationTest extends UnitTestCase
     /**
      * @test
      */
-    public function emailCanBeSet()
+    public function emailCanBeSet(): void
     {
         $value = 'fo@bar.com';
         $this->instance->setEmail($value);
@@ -55,7 +55,7 @@ class TaskConfigurationTest extends UnitTestCase
     /**
      * @test
      */
-    public function pathCanBeSet()
+    public function pathCanBeSet(): void
     {
         $value = 'fileadmin/123.xml';
         $this->instance->setPath($value);
@@ -65,7 +65,7 @@ class TaskConfigurationTest extends UnitTestCase
     /**
      * @test
      */
-    public function formatCanBeSet()
+    public function formatCanBeSet(): void
     {
         $value = 'xml';
         $this->instance->setFormat($value);
@@ -75,7 +75,7 @@ class TaskConfigurationTest extends UnitTestCase
     /**
      * @test
      */
-    public function pidCanBeSet()
+    public function pidCanBeSet(): void
     {
         $value = '456';
         $this->instance->setPid($value);
@@ -85,7 +85,7 @@ class TaskConfigurationTest extends UnitTestCase
     /**
      * @test
      */
-    public function mappingCanBeSet()
+    public function mappingCanBeSet(): void
     {
         $value = 'fo:bar';
         $this->instance->setMapping($value);

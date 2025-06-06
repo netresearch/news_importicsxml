@@ -35,20 +35,11 @@ class ImportJob
      */
     protected $logger;
 
-    /**
-     * @var XmlMapper
-     */
-    protected $xmlMapper;
+    protected XmlMapper $xmlMapper;
 
-    /**
-     * @var IcsMapper
-     */
-    protected $icsMapper;
+    protected IcsMapper $icsMapper;
 
-    /**
-     * @var NewsImportService
-     */
-    protected $newsImportService;
+    protected NewsImportService $newsImportService;
 
     /**
      * ImportJob constructor.
@@ -63,7 +54,7 @@ class ImportJob
         IcsMapper $icsMapper,
         NewsImportService $newsImportService,
     ) {
-        $this->logger            = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
+        $this->logger            = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
         $this->xmlMapper         = $xmlMapper;
         $this->icsMapper         = $icsMapper;
         $this->newsImportService = $newsImportService;
@@ -80,7 +71,7 @@ class ImportJob
     /**
      * Import remote content.
      */
-    public function run()
+    public function run(): void
     {
         $this->logger->info(sprintf(
             'Starting import of "%s" (%s), reporting to "%s"',

@@ -11,10 +11,11 @@ declare(strict_types=1);
 
 namespace GeorgRinger\NewsImporticsxml\Command;
 
+use GeorgRinger\NewsImporticsxml\Mapper\XmlMapper;
+use GeorgRinger\NewsImporticsxml\Mapper\IcsMapper;
 use GeorgRinger\News\Domain\Service\NewsImportService;
 use GeorgRinger\NewsImporticsxml\Domain\Model\Dto\TaskConfiguration;
 use GeorgRinger\NewsImporticsxml\Jobs\ImportJob;
-use GeorgRinger\NewsImporticsxml\Mapper;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -34,7 +35,7 @@ class ImportCommand extends Command
     public function __construct(?string $name = null)
     {
         parent::__construct($name);
-        $this->logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
+        $this->logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
     }
 
     protected function configure()
@@ -56,8 +57,8 @@ class ImportCommand extends Command
         $io = new SymfonyStyle($input, $output);
         $io->title($this->getDescription());
 
-        $xmlMapper = new Mapper\XmlMapper();
-        $icsMapper = new Mapper\IcsMapper();
+        $xmlMapper = new XmlMapper();
+        $icsMapper = new IcsMapper();
 
         $newsImportService = GeneralUtility::makeInstance(NewsImportService::class);
         $importJob         = new ImportJob($xmlMapper, $icsMapper, $newsImportService);

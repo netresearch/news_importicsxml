@@ -18,7 +18,7 @@ use function is_array;
 
 class JsonElement extends AbstractNode
 {
-    public function render()
+    public function render(): array
     {
         $parameterArray = $this->data['parameterArray'];
         $resultArray    = $this->initializeResultArray();

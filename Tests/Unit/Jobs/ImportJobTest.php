@@ -23,7 +23,8 @@ namespace GeorgRinger\NewsImporticsxml\Tests\Unit\Jobs;
  *
  * The TYPO3 project - inspiring people to share!
  */
-
+use GeorgRinger\NewsImporticsxml\Mapper\XmlMapper;
+use GeorgRinger\NewsImporticsxml\Mapper\IcsMapper;
 use GeorgRinger\NewsImporticsxml\Domain\Model\Dto\TaskConfiguration;
 use GeorgRinger\NewsImporticsxml\Jobs\ImportJob;
 use TYPO3\CMS\Core\Log\Logger;
@@ -33,7 +34,7 @@ class ImportJobTest extends UnitTestCase
 {
     protected $mockedJob;
 
-    public function setUp()
+    public function setUp(): void
     {
         $logger = $this->getAccessibleMock(Logger::class, ['dummy'], [], '', false);
 
@@ -45,13 +46,14 @@ class ImportJobTest extends UnitTestCase
     /**
      * @test
      */
-    public function xmlMapperIsCalledWithXmlConfiguration()
+    public function xmlMapperIsCalledWithXmlConfiguration(): void
     {
         $configuration = new TaskConfiguration();
         $configuration->setFormat('xml');
+
         $this->mockedJob->_set('configuration', $configuration);
 
-        $xmlMapper = $this->getAccessibleMock('GeorgRinger\NewsImporticsxml\Mapper\XmlMapper', ['map']);
+        $xmlMapper = $this->getAccessibleMock(XmlMapper::class, ['map']);
         $this->mockedJob->_set('xmlMapper', $xmlMapper);
 
         $xmlMapper->expects($this->once())->method('map');
@@ -62,13 +64,14 @@ class ImportJobTest extends UnitTestCase
     /**
      * @test
      */
-    public function icsMapperIsCalledWithXmlConfiguration()
+    public function icsMapperIsCalledWithXmlConfiguration(): void
     {
         $configuration = new TaskConfiguration();
         $configuration->setFormat('ics');
+
         $this->mockedJob->_set('configuration', $configuration);
 
-        $icsMapper = $this->getAccessibleMock('GeorgRinger\NewsImporticsxml\Mapper\IcsMapper', ['map']);
+        $icsMapper = $this->getAccessibleMock(IcsMapper::class, ['map']);
         $this->mockedJob->_set('icsMapper', $icsMapper);
 
         $icsMapper->expects($this->once())->method('map');
@@ -81,10 +84,11 @@ class ImportJobTest extends UnitTestCase
      *
      * @expectedException \UnexpectedValueException
      */
-    public function nonSupportedMapperThrowsException()
+    public function nonSupportedMapperThrowsException(): void
     {
         $configuration = new TaskConfiguration();
         $configuration->setFormat('fo');
+
         $this->mockedJob->_set('configuration', $configuration);
 
         $this->mockedJob->_call('run');

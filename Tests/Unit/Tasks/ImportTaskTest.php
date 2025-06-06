@@ -32,7 +32,7 @@ class ImportTaskTest extends UnitTestCase
     /**
      * @test
      */
-    public function configurationIsCreatedByProperties()
+    public function configurationIsCreatedByProperties(): void
     {
         $expectedConfiguration = new TaskConfiguration();
         $props                 = [

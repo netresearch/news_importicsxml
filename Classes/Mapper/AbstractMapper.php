@@ -25,19 +25,19 @@ class AbstractMapper
     protected $logger;
 
     /** @var SlugHelper */
-    protected $slugHelper;
+    protected object $slugHelper;
 
     protected array $extensionConfiguration = [];
 
     public function __construct()
     {
-        $this->logger     = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
+        $this->logger     = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
         $fieldConfig      = $GLOBALS['TCA']['tx_news_domain_model_news']['columns']['path_segment']['config'];
         $this->slugHelper = GeneralUtility::makeInstance(SlugHelper::class, 'tx_news_domain_model_news', 'path_segment', $fieldConfig);
 
         try {
             $this->extensionConfiguration = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('news_importicsxml');
-        } catch (Exception $e) {
+        } catch (Exception) {
             // do nothing
         }
     }

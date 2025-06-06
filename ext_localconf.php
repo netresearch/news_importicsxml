@@ -9,19 +9,22 @@
 
 declare(strict_types=1);
 
+use GeorgRinger\NewsImporticsxml\Hooks\Backend\Element\JsonElement;
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
+
 call_user_func(
-    static function ($extKey) {
+    static function ($extKey): void {
         $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1496812651] = [
             'nodeName' => 'json',
             'priority' => 40,
-            'class'    => GeorgRinger\NewsImporticsxml\Hooks\Backend\Element\JsonElement::class,
+            'class'    => JsonElement::class,
         ];
 
         $GLOBALS['TYPO3_CONF_VARS']['EXT']['news']['classes']['Domain/Model/News'][] = $extKey;
 
-        spl_autoload_register(static function ($class) {
+        spl_autoload_register(static function ($class): void {
             if (str_starts_with($class, 'PicoFeed')) {
-                $path = TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('news_importicsxml') . 'Resources/Private/Contrib/picoFeed/lib/' . str_replace('\\',
+                $path = ExtensionManagementUtility::extPath('news_importicsxml') . 'Resources/Private/Contrib/picoFeed/lib/' . str_replace('\\',
                     '/', $class) . '.php';
                 require_once $path;
             }

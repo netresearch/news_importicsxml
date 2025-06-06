@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace GeorgRinger\NewsImporticsxml\Mapper;
 
+use TYPO3\CMS\Core\Context\Context;
 use GeorgRinger\NewsImporticsxml\Domain\Model\Dto\TaskConfiguration;
 use PicoFeed\Config\Config;
 use PicoFeed\Parser\Item;
@@ -26,7 +27,7 @@ class XmlMapper extends AbstractMapper implements MapperInterface
      *
      * @return array
      */
-    public function map(TaskConfiguration $configuration)
+    public function map(TaskConfiguration $configuration): array
     {
         if ($configuration->getCleanBeforeImport()) {
             $this->removeImportedRecordsFromPid($configuration->getPid(), $this->getImportSource());
@@ -36,6 +37,7 @@ class XmlMapper extends AbstractMapper implements MapperInterface
 
         $readerConfig = new Config();
         $readerConfig->setContentFiltering(false);
+
         $reader   = new Reader($readerConfig);
         $resource = $reader->discover($configuration->getPath());
 
@@ -53,7 +55,7 @@ class XmlMapper extends AbstractMapper implements MapperInterface
             $singleItem = [
                 'import_source' => $this->getImportSource(),
                 'import_id'     => $id,
-                'crdate'        => $GLOBALS['EXEC_TIME'],
+                'crdate'        => GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('date', 'timestamp'),
                 'cruser_id'     => isset($GLOBALS['BE_USER'], $GLOBALS['BE_USER']->user) ? $GLOBALS['BE_USER']->user['uid'] : 0,
                 'type'          => 0,
                 'hidden'        => 0,
@@ -67,7 +69,7 @@ class XmlMapper extends AbstractMapper implements MapperInterface
                 '_dynamicData'  => [
                     'reference'         => $item,
                     'news_importicsxml' => [
-                        'importDate' => date('d.m.Y h:i:s', $GLOBALS['EXEC_TIME']),
+                        'importDate' => date('d.m.Y h:i:s', GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('date', 'timestamp')),
                         'feed'       => $configuration->getPath(),
                         'url'        => $item->getUrl(),
                         'guid'       => $item->getTag('guid'),
@@ -79,6 +81,7 @@ class XmlMapper extends AbstractMapper implements MapperInterface
                 $singleItem['type']        = 2;
                 $singleItem['externalurl'] = $item->getUrl();
             }
+
             if ($configuration->isSetSlug()) {
                 $singleItem['generate_path_segment'] = true;
             }
@@ -118,6 +121,7 @@ class XmlMapper extends AbstractMapper implements MapperInterface
                     $content = GeneralUtility::getUrl($url);
                     $status  = GeneralUtility::writeFile(Environment::getPublicPath() . '/' . $file, $content);
                 }
+
                 if ($status) {
                     if (in_array($extensions[$mimeType], ['gif', 'jpeg', 'jpg', 'png'], true)) {
                         $singleItem['media'][] = [
@@ -140,15 +144,17 @@ class XmlMapper extends AbstractMapper implements MapperInterface
      *
      * @return array
      */
-    protected function getCategories(SimpleXMLElement $xml, TaskConfiguration $configuration)
+    protected function getCategories(SimpleXMLElement $xml, TaskConfiguration $configuration): array
     {
-        $categoryIds = $categoryTitles = [];
+        $categoryIds = [];
+        $categoryTitles = [];
         $categories  = $xml->category;
         if ($categories) {
             foreach ($categories as $cat) {
                 $categoryTitles[] = (string) $cat;
             }
         }
+
         if (!empty($categoryTitles)) {
             if (!$configuration->getMapping()) {
                 $this->logger->info('Categories found during import but no mapping assigned in the task!');

@@ -53,7 +53,7 @@ class TaskConfiguration
     /**
      * @param string $email
      */
-    public function setEmail($email)
+    public function setEmail($email): void
     {
         $this->email = $email;
     }
@@ -69,7 +69,7 @@ class TaskConfiguration
     /**
      * @param string $path
      */
-    public function setPath($path)
+    public function setPath($path): void
     {
         $this->path = $path;
     }
@@ -85,7 +85,7 @@ class TaskConfiguration
     /**
      * @param string $mapping
      */
-    public function setMapping($mapping)
+    public function setMapping($mapping): void
     {
         $this->mapping = $mapping;
     }
@@ -101,7 +101,7 @@ class TaskConfiguration
     /**
      * @param string $format
      */
-    public function setFormat($format)
+    public function setFormat($format): void
     {
         $this->format = $format;
     }
@@ -117,7 +117,7 @@ class TaskConfiguration
     /**
      * @param int $pid
      */
-    public function setPid($pid)
+    public function setPid($pid): void
     {
         $this->pid = $pid;
     }
@@ -133,7 +133,7 @@ class TaskConfiguration
     /**
      * @param bool $persistAsExternalUrl
      */
-    public function setPersistAsExternalUrl($persistAsExternalUrl)
+    public function setPersistAsExternalUrl($persistAsExternalUrl): void
     {
         $this->persistAsExternalUrl = (bool) $persistAsExternalUrl;
     }
@@ -149,7 +149,7 @@ class TaskConfiguration
     /**
      * @param bool $cleanBeforeImport
      */
-    public function setCleanBeforeImport($cleanBeforeImport)
+    public function setCleanBeforeImport($cleanBeforeImport): void
     {
         $this->cleanBeforeImport = $cleanBeforeImport;
     }
@@ -167,7 +167,7 @@ class TaskConfiguration
      *
      * @return TaskConfiguration
      */
-    public function setSetSlug(bool $setSlug)
+    public function setSetSlug(bool $setSlug): void
     {
         $this->setSlug = $setSlug;
     }
@@ -179,7 +179,7 @@ class TaskConfiguration
      *
      * @return array
      */
-    public function getMappingConfigured()
+    public function getMappingConfigured(): array
     {
         $out   = [];
         $lines = GeneralUtility::trimExplode('|', $this->mapping, true);

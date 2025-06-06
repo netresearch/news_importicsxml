@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace GeorgRinger\NewsImporticsxml\Mapper;
 
+use TYPO3\CMS\Core\Context\Context;
 use GeorgRinger\NewsImporticsxml\Domain\Model\Dto\TaskConfiguration;
 use ICal\ICal;
 use RuntimeException;
@@ -28,7 +29,7 @@ class IcsMapper extends AbstractMapper implements MapperInterface
      *
      * @return array
      */
-    public function map(TaskConfiguration $configuration)
+    public function map(TaskConfiguration $configuration): array
     {
         if ($configuration->getCleanBeforeImport()) {
             $this->removeImportedRecordsFromPid($configuration->getPid(), $this->getImportSource());
@@ -59,7 +60,7 @@ class IcsMapper extends AbstractMapper implements MapperInterface
             $singleItem = [
                 'import_source' => $this->getImportSource(),
                 'import_id'     => $id . '-' . $idCount[$id],
-                'crdate'        => $GLOBALS['EXEC_TIME'],
+                'crdate'        => GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('date', 'timestamp'),
                 'cruser_id'     => $GLOBALS['BE_USER'] ?? $GLOBALS['BE_USER']->user['uid'] ?? 0,
                 'type'          => 0,
                 'hidden'        => 0,
@@ -74,7 +75,7 @@ class IcsMapper extends AbstractMapper implements MapperInterface
                     'datetime_end'      => (isset($event->dtend) ? $iCalService->iCalDateToUnixTimestamp($event->dtend) : ''),
                     'reference'         => $event,
                     'news_importicsxml' => [
-                        'importDate' => date('d.m.Y h:i:s', $GLOBALS['EXEC_TIME']),
+                        'importDate' => date('d.m.Y h:i:s', GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('date', 'timestamp')),
                         'feed'       => $configuration->getPath(),
                         'UID'        => $event->uid,
                         'VARIANT'    => $idCount[$id],
@@ -96,6 +97,7 @@ class IcsMapper extends AbstractMapper implements MapperInterface
             if ($configuration->isSetSlug()) {
                 $singleItem['generate_path_segment'] = true;
             }
+
             $data[] = $singleItem;
         }
 
@@ -156,13 +158,13 @@ class IcsMapper extends AbstractMapper implements MapperInterface
      *
      * @return string
      */
-    protected function getFileContent(TaskConfiguration $configuration)
+    protected function getFileContent(TaskConfiguration $configuration): string
     {
         $path = $configuration->getPath();
         if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
             $content = $this->getContentOfFile($path);
 
-            $temporaryCopyPath = Environment::getPublicPath() . '/typo3temp/' . md5($path . $GLOBALS['EXEC_TIME']);
+            $temporaryCopyPath = Environment::getPublicPath() . '/typo3temp/' . md5($path . GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('date', 'timestamp'));
             GeneralUtility::writeFileToTypo3tempDir($temporaryCopyPath, $content);
             $this->pathIsModified = true;
         } else {
@@ -176,7 +178,7 @@ class IcsMapper extends AbstractMapper implements MapperInterface
         return $temporaryCopyPath;
     }
 
-    protected function getContentOfFile($url)
+    protected function getContentOfFile(string $url): string
     {
         $response = GeneralUtility::getUrl($url);
 
