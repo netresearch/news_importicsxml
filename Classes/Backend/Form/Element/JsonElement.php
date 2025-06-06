@@ -26,7 +26,10 @@ class JsonElement extends AbstractNode
         $json                = $parameterArray['itemFormElValue'];
         $resultArray['html'] = '';
         if (!empty($json)) {
-            $data = json_decode($json, true);
+            $data = json_decode(
+                $json,
+                true
+            );
             if (is_array($data) && !empty($data)) {
                 $resultArray['html'] = DebugUtility::viewArray($data);
             }

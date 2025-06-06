@@ -11,8 +11,8 @@ declare(strict_types=1);
 
 namespace GeorgRinger\NewsImporticsxml\Command;
 
-use GeorgRinger\NewsImporticsxml\Mapper\XmlMapper;
 use GeorgRinger\NewsImporticsxml\Mapper\IcsMapper;
+use GeorgRinger\NewsImporticsxml\Mapper\XmlMapper;
 use GeorgRinger\News\Domain\Service\NewsImportService;
 use GeorgRinger\NewsImporticsxml\Domain\Model\Dto\TaskConfiguration;
 use GeorgRinger\NewsImporticsxml\Jobs\ImportJob;
@@ -32,27 +32,71 @@ class ImportCommand extends Command implements LoggerAwareInterface
     protected function configure(): void
     {
         $this
-            ->addArgument('path', InputArgument::REQUIRED, $this->getLabel('path'))
-            ->addArgument('pid', InputArgument::REQUIRED, $this->getLabel('pid'))
-            ->addArgument('format', InputArgument::REQUIRED, $this->getLabel('format'))
-            ->addArgument('slug', InputArgument::OPTIONAL, $this->getLabel('slug'), true)
-            ->addArgument('cleanBeforeImport', InputArgument::OPTIONAL, $this->getLabel('cleanBeforeImport'), false)
-            ->addArgument('persistAsExternalUrl', InputArgument::OPTIONAL, $this->getLabel('persistAsExternalUrl'), false)
-            ->addArgument('email', InputArgument::OPTIONAL, $this->getLabel('email'), '')
-            ->addArgument('mapping', InputArgument::OPTIONAL, $this->getLabel('mapping'), '')
+            ->addArgument(
+                'path',
+                InputArgument::REQUIRED,
+                $this->getLabel('path')
+            )
+            ->addArgument(
+                'pid',
+                InputArgument::REQUIRED,
+                $this->getLabel('pid')
+            )
+            ->addArgument(
+                'format',
+                InputArgument::REQUIRED,
+                $this->getLabel('format')
+            )
+            ->addArgument(
+                'slug',
+                InputArgument::OPTIONAL,
+                $this->getLabel('slug'),
+                true
+            )
+            ->addArgument(
+                'cleanBeforeImport',
+                InputArgument::OPTIONAL,
+                $this->getLabel('cleanBeforeImport'),
+                false
+            )
+            ->addArgument(
+                'persistAsExternalUrl',
+                InputArgument::OPTIONAL,
+                $this->getLabel('persistAsExternalUrl'),
+                false
+            )
+            ->addArgument(
+                'email',
+                InputArgument::OPTIONAL,
+                $this->getLabel('email'),
+                ''
+            )
+            ->addArgument(
+                'mapping',
+                InputArgument::OPTIONAL,
+                $this->getLabel('mapping'),
+                ''
+            )
             ->setDescription('Import of ICS and XML (RSS) into EXT:news');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
+        $io = new SymfonyStyle(
+            $input,
+            $output
+        );
         $io->title($this->getDescription());
 
         $xmlMapper = new XmlMapper();
         $icsMapper = new IcsMapper();
 
         $newsImportService = GeneralUtility::makeInstance(NewsImportService::class);
-        $importJob         = new ImportJob($xmlMapper, $icsMapper, $newsImportService);
+        $importJob         = new ImportJob(
+            $xmlMapper,
+            $icsMapper,
+            $newsImportService
+        );
         $importJob->setConfiguration($this->createConfiguration($input));
         $importJob->run();
 
@@ -72,7 +116,11 @@ class ImportCommand extends Command implements LoggerAwareInterface
 
         $mapping = (string) $input->getArgument('mapping');
         if ($mapping) {
-            $mapping = str_replace('|', chr(10), $mapping);
+            $mapping = str_replace(
+                '|',
+                chr(10),
+                $mapping
+            );
             $configuration->setMapping($mapping);
         }
 

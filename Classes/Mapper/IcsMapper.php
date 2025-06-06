@@ -34,7 +34,10 @@ class IcsMapper extends AbstractMapper
     public function map(TaskConfiguration $configuration): array
     {
         if ($configuration->getCleanBeforeImport()) {
-            $this->removeImportedRecordsFromPid($configuration->getPid(), $this->getImportSource());
+            $this->removeImportedRecordsFromPid(
+                $configuration->getPid(),
+                $this->getImportSource()
+            );
         }
 
         $data = [];
@@ -62,36 +65,52 @@ class IcsMapper extends AbstractMapper
             $singleItem = [
                 'import_source' => $this->getImportSource(),
                 'import_id'     => $id . '-' . $idCount[$id],
-                'crdate'        => GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('date', 'timestamp'),
-                'cruser_id'     => $GLOBALS['BE_USER'] ?? $GLOBALS['BE_USER']->user['uid'] ?? 0,
-                'type'          => 0,
-                'hidden'        => 0,
-                'pid'           => $configuration->getPid(),
-                'title'         => $this->cleanup((string) $event->summary),
-                'bodytext'      => $this->cleanup((string) $event->description),
-                'datetime'      => $datetime,
-                'archive'       => (isset($event->dtend) ? $iCalService->iCalDateToUnixTimestamp($event->dtend) + 86400 : ''),
-                'categories'    => $this->getCategories((array) ($event->categories_array ?? []), $configuration),
-                '_dynamicData'  => [
-                    'location'          => (isset($event->location) ? $event->location : ''),
-                    'datetime_end'      => (isset($event->dtend) ? $iCalService->iCalDateToUnixTimestamp($event->dtend) : ''),
+                'crdate'        => GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect(
+                    'date',
+                    'timestamp'
+                ),
+                'cruser_id' => $GLOBALS['BE_USER'] ?? $GLOBALS['BE_USER']->user['uid'] ?? 0,
+                'type'      => 0,
+                'hidden'    => 0,
+                'pid'       => $configuration->getPid(),
+                'title'     => $this->cleanup((string) $event->summary),
+                'bodytext'  => $this->cleanup((string) $event->description),
+                'datetime'  => $datetime,
+                'archive'   => (isset($event->dtend) ? $iCalService->iCalDateToUnixTimestamp(
+                    $event->dtend
+                ) + 86400 : ''),
+                'categories' => $this->getCategories(
+                    (array) ($event->categories_array ?? []),
+                    $configuration
+                ),
+                '_dynamicData' => [
+                    'location'     => (isset($event->location) ? $event->location : ''),
+                    'datetime_end' => (isset($event->dtend) ? $iCalService->iCalDateToUnixTimestamp(
+                        $event->dtend
+                    ) : ''),
                     'reference'         => $event,
                     'news_importicsxml' => [
-                        'importDate' => date('d.m.Y h:i:s', GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('date', 'timestamp')),
-                        'feed'       => $configuration->getPath(),
-                        'UID'        => $event->uid,
-                        'VARIANT'    => $idCount[$id],
-                        'LOCATION'   => (isset($event->location) ? $event->location : ''),
-                        'DTSTART'    => $event->dtstart ?? '',
-                        'DTSTAMP'    => $event->dtstamp ?? '',
-                        'DTEND'      => $event->dtend ?? '',
-                        'PRIORITY'   => $event->priority ?? '',
-                        'SEQUENCE'   => $event->sequence,
-                        'STATUS'     => $event->status ?? '',
-                        'TRANSP'     => $event->transp ?? '',
-                        'URL'        => $event->url ?? '',
-                        'ATTACH'     => $event->attach ?? '',
-                        'SUMMARY'    => $event->summary ?? '',
+                        'importDate' => date(
+                            'd.m.Y h:i:s',
+                            GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect(
+                                'date',
+                                'timestamp'
+                            )
+                        ),
+                        'feed'     => $configuration->getPath(),
+                        'UID'      => $event->uid,
+                        'VARIANT'  => $idCount[$id],
+                        'LOCATION' => (isset($event->location) ? $event->location : ''),
+                        'DTSTART'  => $event->dtstart ?? '',
+                        'DTSTAMP'  => $event->dtstamp ?? '',
+                        'DTEND'    => $event->dtend ?? '',
+                        'PRIORITY' => $event->priority ?? '',
+                        'SEQUENCE' => $event->sequence,
+                        'STATUS'   => $event->status ?? '',
+                        'TRANSP'   => $event->transp ?? '',
+                        'URL'      => $event->url ?? '',
+                        'ATTACH'   => $event->attach ?? '',
+                        'SUMMARY'  => $event->summary ?? '',
                     ],
                 ],
             ];
@@ -126,11 +145,21 @@ class IcsMapper extends AbstractMapper
                 $categoryMapping = $configuration->getMappingConfigured();
 
                 foreach ($categoryTitles as $rawTitle) {
-                    $splitTitle = GeneralUtility::trimExplode(',', $rawTitle, true, 0);
+                    $splitTitle = GeneralUtility::trimExplode(
+                        ',',
+                        $rawTitle,
+                        true,
+                        0
+                    );
 
                     foreach ($splitTitle as $title) {
                         if (!isset($categoryMapping[$title])) {
-                            $this->logger->warning(sprintf('Category mapping is missing for category "%s"', $title));
+                            $this->logger->warning(
+                                sprintf(
+                                    'Category mapping is missing for category "%s"',
+                                    $title
+                                )
+                            );
                         } else {
                             $categoryIds[] = $categoryMapping[$title];
                         }
@@ -149,10 +178,20 @@ class IcsMapper extends AbstractMapper
      */
     protected function cleanup(string $content): string
     {
-        $search  = ['\\,', '\\n'];
-        $replace = [',', chr(10)];
+        $search = [
+            '\\,',
+            '\\n',
+        ];
+        $replace = [
+            ',',
+            chr(10),
+        ];
 
-        return str_replace($search, $replace, $content);
+        return str_replace(
+            $search,
+            $replace,
+            $content
+        );
     }
 
     /**
@@ -163,18 +202,37 @@ class IcsMapper extends AbstractMapper
     protected function getFileContent(TaskConfiguration $configuration): string
     {
         $path = $configuration->getPath();
-        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+        if (str_starts_with(
+            $path,
+            'http://'
+        ) || str_starts_with(
+            $path,
+            'https://'
+        )) {
             $content = $this->getContentOfFile($path);
 
-            $temporaryCopyPath = Environment::getPublicPath() . '/typo3temp/' . md5($path . GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('date', 'timestamp'));
-            GeneralUtility::writeFileToTypo3tempDir($temporaryCopyPath, $content);
+            $temporaryCopyPath = Environment::getPublicPath() . '/typo3temp/' . md5(
+                $path . GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect(
+                    'date',
+                    'timestamp'
+                )
+            );
+            GeneralUtility::writeFileToTypo3tempDir(
+                $temporaryCopyPath,
+                $content
+            );
             $this->pathIsModified = true;
         } else {
             $temporaryCopyPath = Environment::getPublicPath() . '/' . $configuration->getPath();
         }
 
         if (!is_file($temporaryCopyPath)) {
-            throw new RuntimeException(sprintf('The path "%s" does not contain a valid file', $temporaryCopyPath));
+            throw new RuntimeException(
+                sprintf(
+                    'The path "%s" does not contain a valid file',
+                    $temporaryCopyPath
+                )
+            );
         }
 
         return $temporaryCopyPath;
@@ -185,7 +243,10 @@ class IcsMapper extends AbstractMapper
         $response = GeneralUtility::getUrl($url);
 
         if (empty($response)) {
-            $message = sprintf('URL "%s" returned an empty content!', $url);
+            $message = sprintf(
+                'URL "%s" returned an empty content!',
+                $url
+            );
             $this->logger->alert($message);
             throw new RuntimeException($message);
         }

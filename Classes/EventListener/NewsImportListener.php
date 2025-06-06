@@ -13,6 +13,8 @@ namespace GeorgRinger\NewsImporticsxml\EventListener;
 
 use GeorgRinger\News\Event\NewsImportPostHydrateEvent;
 
+use function is_array;
+
 /**
  * Persist dynamic data of import.
  */
@@ -21,8 +23,16 @@ class NewsImportListener
     public function __invoke(NewsImportPostHydrateEvent $event): void
     {
         $importData = $event->getImportItem();
+
         if (is_array($importData['_dynamicData']['news_importicsxml'] ?? null)) {
-            $event->getNews()->setNewsImportData(json_encode($importData['_dynamicData']['news_importicsxml']));
+            $event
+                ->getNews()
+                ->setNewsImportData(
+                    json_encode(
+                        $importData['_dynamicData']['news_importicsxml'],
+                        JSON_THROW_ON_ERROR
+                    )
+                );
         }
     }
 }

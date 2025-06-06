@@ -30,7 +30,10 @@ class XmlMapper extends AbstractMapper
     public function map(TaskConfiguration $configuration): array
     {
         if ($configuration->getCleanBeforeImport()) {
-            $this->removeImportedRecordsFromPid($configuration->getPid(), $this->getImportSource());
+            $this->removeImportedRecordsFromPid(
+                $configuration->getPid(),
+                $this->getImportSource()
+            );
         }
 
         $data = [];
@@ -55,28 +58,44 @@ class XmlMapper extends AbstractMapper
             $singleItem = [
                 'import_source' => $this->getImportSource(),
                 'import_id'     => $id,
-                'crdate'        => GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('date', 'timestamp'),
-                'cruser_id'     => isset($GLOBALS['BE_USER'], $GLOBALS['BE_USER']->user) ? $GLOBALS['BE_USER']->user['uid'] : 0,
-                'type'          => 0,
-                'hidden'        => 0,
-                'pid'           => $configuration->getPid(),
-                'title'         => $item->getTitle(),
-                'teaser'        => trim((string) $item->xml->description),
-                'bodytext'      => trim($this->cleanup($item->getContent())),
-                'author'        => $item->getAuthor(),
-                'datetime'      => $item->getDate()->getTimestamp(),
-                'categories'    => $this->getCategories($item->xml, $configuration),
-                '_dynamicData'  => [
+                'crdate'        => GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect(
+                    'date',
+                    'timestamp'
+                ),
+                'cruser_id'  => isset($GLOBALS['BE_USER'], $GLOBALS['BE_USER']->user) ? $GLOBALS['BE_USER']->user['uid'] : 0,
+                'type'       => 0,
+                'hidden'     => 0,
+                'pid'        => $configuration->getPid(),
+                'title'      => $item->getTitle(),
+                'teaser'     => trim((string) $item->xml->description),
+                'bodytext'   => trim($this->cleanup($item->getContent())),
+                'author'     => $item->getAuthor(),
+                'datetime'   => $item->getDate()->getTimestamp(),
+                'categories' => $this->getCategories(
+                    $item->xml,
+                    $configuration
+                ),
+                '_dynamicData' => [
                     'reference'         => $item,
                     'news_importicsxml' => [
-                        'importDate' => date('d.m.Y h:i:s', GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('date', 'timestamp')),
-                        'feed'       => $configuration->getPath(),
-                        'url'        => $item->getUrl(),
-                        'guid'       => $item->getTag('guid'),
+                        'importDate' => date(
+                            'd.m.Y h:i:s',
+                            GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect(
+                                'date',
+                                'timestamp'
+                            )
+                        ),
+                        'feed' => $configuration->getPath(),
+                        'url'  => $item->getUrl(),
+                        'guid' => $item->getTag('guid'),
                     ],
                 ],
             ];
-            $this->addRemoteFiles($singleItem, $item->xml, $configuration->getPath());
+            $this->addRemoteFiles(
+                $singleItem,
+                $item->xml,
+                $configuration->getPath()
+            );
             if ($configuration->isPersistAsExternalUrl()) {
                 $singleItem['type']        = 2;
                 $singleItem['externalurl'] = $item->getUrl();
@@ -102,7 +121,10 @@ class XmlMapper extends AbstractMapper
             'application/pdf' => 'pdf',
         ];
 
-        $targetPath = trim($this->extensionConfiguration['importPath'] ?? '', '/');
+        $targetPath = trim(
+            $this->extensionConfiguration['importPath'] ?? '',
+            '/'
+        );
         $targetPath = $targetPath ?: 'uploads/tx_newsimporticsxml';
         $targetPath = '/' . $targetPath . '/';
 
@@ -112,18 +134,34 @@ class XmlMapper extends AbstractMapper
             if (!empty($url) && isset($extensions[$mimeType])) {
                 $urlInfo  = parse_url($url);
                 $fileInfo = pathinfo($urlInfo['path']);
-                $path     = $targetPath . substr(md5($xmlPath), 0, 10) . $fileInfo['dirname'] . '/';
+                $path     = $targetPath . substr(
+                    md5($xmlPath),
+                    0,
+                    10
+                ) . $fileInfo['dirname'] . '/';
                 GeneralUtility::mkdir_deep(Environment::getPublicPath() . $path);
                 $file = $path . rawurldecode($fileInfo['basename']);
                 if (is_file(Environment::getPublicPath() . '/' . $file)) {
                     $status = true;
                 } else {
                     $content = GeneralUtility::getUrl($url);
-                    $status  = GeneralUtility::writeFile(Environment::getPublicPath() . '/' . $file, $content);
+                    $status  = GeneralUtility::writeFile(
+                        Environment::getPublicPath() . '/' . $file,
+                        $content
+                    );
                 }
 
                 if ($status) {
-                    if (in_array($extensions[$mimeType], ['gif', 'jpeg', 'jpg', 'png'], true)) {
+                    if (in_array(
+                        $extensions[$mimeType],
+                        [
+                            'gif',
+                            'jpeg',
+                            'jpg',
+                            'png',
+                        ],
+                        true
+                    )) {
                         $singleItem['media'][] = [
                             'image'         => $file,
                             'showinpreview' => true,
@@ -146,9 +184,9 @@ class XmlMapper extends AbstractMapper
      */
     protected function getCategories(SimpleXMLElement $xml, TaskConfiguration $configuration): array
     {
-        $categoryIds = [];
+        $categoryIds    = [];
         $categoryTitles = [];
-        $categories  = $xml->category;
+        $categories     = $xml->category;
         if ($categories) {
             foreach ($categories as $cat) {
                 $categoryTitles[] = (string) $cat;
@@ -162,7 +200,12 @@ class XmlMapper extends AbstractMapper
                 $categoryMapping = $configuration->getMappingConfigured();
                 foreach ($categoryTitles as $title) {
                     if (!isset($categoryMapping[$title])) {
-                        $this->logger->warning(sprintf('Category mapping is missing for category "%s"', $title));
+                        $this->logger->warning(
+                            sprintf(
+                                'Category mapping is missing for category "%s"',
+                                $title
+                            )
+                        );
                     } else {
                         $categoryIds[] = $categoryMapping[$title];
                     }
@@ -180,10 +223,24 @@ class XmlMapper extends AbstractMapper
      */
     protected function cleanup($content): string
     {
-        $search  = ['<br />', '<br>', '<br/>', LF . LF];
-        $replace = [LF, LF, LF, LF];
+        $search = [
+            '<br />',
+            '<br>',
+            '<br/>',
+            LF . LF,
+        ];
+        $replace = [
+            LF,
+            LF,
+            LF,
+            LF,
+        ];
 
-        return str_replace($search, $replace, $content);
+        return str_replace(
+            $search,
+            $replace,
+            $content
+        );
     }
 
     /**

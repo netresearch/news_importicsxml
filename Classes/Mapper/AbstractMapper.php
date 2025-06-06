@@ -28,16 +28,34 @@ abstract class AbstractMapper implements MapperInterface, LoggerAwareInterface
      */
     protected SlugHelper $slugHelper;
 
+    /**
+     * @var array<mixed>
+     */
     protected array $extensionConfiguration = [];
 
-    public function __construct()
-    {
-        $this->logger     = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
-        $fieldConfig      = $GLOBALS['TCA']['tx_news_domain_model_news']['columns']['path_segment']['config'];
-        $this->slugHelper = GeneralUtility::makeInstance(SlugHelper::class, 'tx_news_domain_model_news', 'path_segment', $fieldConfig);
+    /**
+     * @var ConnectionPool
+     */
+    private ConnectionPool $connectionPool;
+
+    public function __construct(
+        ExtensionConfiguration $extensionConfiguration,
+        ConnectionPool $connectionPool,
+    ) {
+        $this->connectionPool = $connectionPool;
+
+        $fieldConfig = $GLOBALS['TCA']['tx_news_domain_model_news']['columns']['path_segment']['config'];
+
+        $this->slugHelper = GeneralUtility::makeInstance(
+            SlugHelper::class,
+            'tx_news_domain_model_news',
+            'path_segment',
+            $fieldConfig
+        );
 
         try {
-            $this->extensionConfiguration = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('news_importicsxml');
+            $this->extensionConfiguration = $extensionConfiguration
+                ->get('news_importicsxml');
         } catch (Exception) {
             // do nothing
         }
@@ -45,8 +63,9 @@ abstract class AbstractMapper implements MapperInterface, LoggerAwareInterface
 
     protected function removeImportedRecordsFromPid(int $pid, string $importSource): void
     {
-        $connection = GeneralUtility::makeInstance(ConnectionPool::class)
+        $connection = $this->connectionPool
             ->getConnectionForTable('tx_news_domain_model_news');
+
         $connection->delete(
             'tx_news_domain_model_news',
             [

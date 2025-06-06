@@ -227,10 +227,22 @@ class TaskConfiguration
      */
     public function getMappingConfigured(): array
     {
-        $out   = [];
-        $lines = GeneralUtility::trimExplode('|', $this->mapping, true);
+        $out = [];
+
+        $lines = GeneralUtility::trimExplode(
+            '|',
+            $this->mapping,
+            true
+        );
+
         foreach ($lines as $line) {
-            $split          = GeneralUtility::trimExplode(':', $line, true, 2);
+            $split = GeneralUtility::trimExplode(
+                ':',
+                $line,
+                true,
+                2
+            );
+
             $out[$split[1]] = $split[0];
         }
 

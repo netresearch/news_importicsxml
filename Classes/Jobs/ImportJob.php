@@ -19,6 +19,9 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use UnexpectedValueException;
 
+use function count;
+use function sprintf;
+
 /**
  * Base import handling.
  */
@@ -71,11 +74,14 @@ class ImportJob implements LoggerAwareInterface
      */
     public function run(): void
     {
-        $this->logger->info(sprintf(
-            'Starting import of "%s" (%s), reporting to "%s"',
-            $this->configuration->getPath(),
-            strtoupper($this->configuration->getFormat()),
-            $this->configuration->getEmail()));
+        $this->logger->info(
+            sprintf(
+                'Starting import of "%s" (%s), reporting to "%s"',
+                $this->configuration->getPath(),
+                strtoupper($this->configuration->getFormat()),
+                $this->configuration->getEmail()
+            )
+        );
 
         switch (strtolower($this->configuration->getFormat())) {
             case 'xml':
@@ -85,9 +91,15 @@ class ImportJob implements LoggerAwareInterface
                 $data = $this->icsMapper->map($this->configuration);
                 break;
             default:
-                $message = sprintf('Format "%s" is not supported!', $this->configuration->getFormat());
+                $message = sprintf(
+                    'Format "%s" is not supported!',
+                    $this->configuration->getFormat()
+                );
                 $this->logger->critical($message);
-                throw new UnexpectedValueException($message, 1527601575);
+                throw new UnexpectedValueException(
+                    $message,
+                    1527601575
+                );
         }
 
         $this->import($data);
@@ -98,7 +110,12 @@ class ImportJob implements LoggerAwareInterface
      */
     protected function import(?array $data = null): void
     {
-        $this->logger->info(sprintf('Starting import of %s records', count($data)));
+        $this->logger->info(
+            sprintf(
+                'Starting import of %s records',
+                count($data)
+            )
+        );
         $this->newsImportService->import($data);
     }
 }
