@@ -16,20 +16,28 @@ use PicoFeed\Config\Config;
 use PicoFeed\Parser\Item;
 use PicoFeed\Reader\Reader;
 use SimpleXMLElement;
-use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Context\Exception\AspectNotFoundException;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use function in_array;
+use function sprintf;
+use function strlen;
 
+/**
+ * Class XmlMapper
+ */
 class XmlMapper extends AbstractMapper
 {
     /**
      * @param TaskConfiguration $configuration
      *
-     * @return array
+     * @return array<mixed>
+     *
+     * @throws AspectNotFoundException
      */
     public function map(TaskConfiguration $configuration): array
     {
-        if ($configuration->getCleanBeforeImport()) {
+        if ($configuration->isCleanBeforeImport()) {
             $this->removeImportedRecordsFromPid(
                 $configuration->getPid(),
                 $this->getImportSource()
@@ -50,15 +58,17 @@ class XmlMapper extends AbstractMapper
             $resource->getEncoding()
         );
 
+        /** @var Item[] $items */
         $items = $parser->execute()->getItems();
 
         foreach ($items as $item) {
             $id = strlen($item->getId()) > 100 ? md5($item->getId()) : $item->getId();
+
             /** @var Item $item */
             $singleItem = [
                 'import_source' => $this->getImportSource(),
                 'import_id'     => $id,
-                'crdate'        => GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect(
+                'crdate'        => $this->context->getPropertyFromAspect(
                     'date',
                     'timestamp'
                 ),
@@ -70,21 +80,12 @@ class XmlMapper extends AbstractMapper
                 'teaser'     => trim((string) $item->xml->description),
                 'bodytext'   => trim($this->cleanup($item->getContent())),
                 'author'     => $item->getAuthor(),
-                'datetime'   => $item->getDate()->getTimestamp(),
-                'categories' => $this->getCategories(
-                    $item->xml,
-                    $configuration
-                ),
+                'datetime'   => $item->getDate()?->getTimestamp() ?? 0,
+                'categories' => $this->getCategories($item->xml, $configuration),
                 '_dynamicData' => [
                     'reference'         => $item,
                     'news_importicsxml' => [
-                        'importDate' => date(
-                            'd.m.Y h:i:s',
-                            GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect(
-                                'date',
-                                'timestamp'
-                            )
-                        ),
+                        'importDate' => date('d.m.Y h:i:s', $this->context->getPropertyFromAspect('date', 'timestamp')),
                         'feed' => $configuration->getPath(),
                         'url'  => $item->getUrl(),
                         'guid' => $item->getTag('guid'),
@@ -111,7 +112,14 @@ class XmlMapper extends AbstractMapper
         return $data;
     }
 
-    protected function addRemoteFiles(array &$singleItem, SimpleXMLElement $xml, string $xmlPath)
+    /**
+     * @param array<string, mixed>            $singleItem
+     * @param SimpleXMLElement $xml
+     * @param string           $xmlPath
+     *
+     * @return void
+     */
+    protected function addRemoteFiles(array &$singleItem, SimpleXMLElement $xml, string $xmlPath): void
     {
         $extensions = [
             'image/jpg'       => 'jpg',
@@ -121,26 +129,23 @@ class XmlMapper extends AbstractMapper
             'application/pdf' => 'pdf',
         ];
 
-        $targetPath = trim(
-            $this->extensionConfiguration['importPath'] ?? '',
-            '/'
-        );
-        $targetPath = $targetPath ?: 'uploads/tx_newsimporticsxml';
+        $targetPath = trim($this->extensionConfiguration['importPath'] ?? '', '/');
+        $targetPath = $targetPath !== '' ? $targetPath : 'uploads/tx_newsimporticsxml';
         $targetPath = '/' . $targetPath . '/';
 
         foreach ($xml->enclosure as $enclosure) {
             $url      = (string) $enclosure->attributes()['url'];
             $mimeType = (string) $enclosure->attributes()['type'];
-            if (!empty($url) && isset($extensions[$mimeType])) {
+
+            if (($url !== '') && isset($extensions[$mimeType])) {
                 $urlInfo  = parse_url($url);
                 $fileInfo = pathinfo($urlInfo['path']);
-                $path     = $targetPath . substr(
-                    md5($xmlPath),
-                    0,
-                    10
-                ) . $fileInfo['dirname'] . '/';
+                $path     = $targetPath . substr(md5($xmlPath), 0, 10) . $fileInfo['dirname'] . '/';
+
                 GeneralUtility::mkdir_deep(Environment::getPublicPath() . $path);
+
                 $file = $path . rawurldecode($fileInfo['basename']);
+
                 if (is_file(Environment::getPublicPath() . '/' . $file)) {
                     $status = true;
                 } else {
@@ -180,36 +185,38 @@ class XmlMapper extends AbstractMapper
      * @param SimpleXMLElement  $xml
      * @param TaskConfiguration $configuration
      *
-     * @return array
+     * @return array<mixed>
      */
     protected function getCategories(SimpleXMLElement $xml, TaskConfiguration $configuration): array
     {
         $categoryIds    = [];
         $categoryTitles = [];
         $categories     = $xml->category;
+
         if ($categories) {
             foreach ($categories as $cat) {
                 $categoryTitles[] = (string) $cat;
             }
         }
 
-        if (!empty($categoryTitles)) {
-            if (!$configuration->getMapping()) {
-                $this->logger->info('Categories found during import but no mapping assigned in the task!');
-            } else {
+        if ($categoryTitles !== []) {
+            if ($configuration->getMapping()) {
                 $categoryMapping = $configuration->getMappingConfigured();
+
                 foreach ($categoryTitles as $title) {
-                    if (!isset($categoryMapping[$title])) {
-                        $this->logger->warning(
+                    if (isset($categoryMapping[$title])) {
+                        $categoryIds[] = $categoryMapping[$title];
+                    } else {
+                        $this->logWarning(
                             sprintf(
                                 'Category mapping is missing for category "%s"',
                                 $title
                             )
                         );
-                    } else {
-                        $categoryIds[] = $categoryMapping[$title];
                     }
                 }
+            } else {
+                $this->logInfo('Categories found during import but no mapping assigned in the task!');
             }
         }
 
@@ -221,7 +228,7 @@ class XmlMapper extends AbstractMapper
      *
      * @return string
      */
-    protected function cleanup($content): string
+    protected function cleanup(string $content): string
     {
         $search = [
             '<br />',

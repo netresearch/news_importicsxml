@@ -223,7 +223,7 @@ class TaskConfiguration
      * 123:This is a category title
      * 345:And another one.
      *
-     * @return array
+     * @return array<string, string>
      */
     public function getMappingConfigured(): array
     {

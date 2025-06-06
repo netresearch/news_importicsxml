@@ -13,6 +13,9 @@ namespace GeorgRinger\NewsImporticsxml\Mapper;
 
 use GeorgRinger\NewsImporticsxml\Domain\Model\Dto\TaskConfiguration;
 
+/**
+ * Interface MapperInterface
+ */
 interface MapperInterface
 {
     /**

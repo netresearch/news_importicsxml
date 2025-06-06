@@ -16,7 +16,9 @@ use GeorgRinger\NewsImporticsxml\Jobs\ImportJob;
 use GeorgRinger\NewsImporticsxml\Mapper\IcsMapper;
 use GeorgRinger\NewsImporticsxml\Mapper\XmlMapper;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\NullLogger;
+use TYPO3\TestingFramework\Core\AccessibleObjectInterface;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use UnexpectedValueException;
 

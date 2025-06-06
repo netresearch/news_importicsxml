@@ -11,9 +11,6 @@ declare(strict_types=1);
 
 namespace GeorgRinger\NewsImporticsxml\Command;
 
-use GeorgRinger\NewsImporticsxml\Mapper\IcsMapper;
-use GeorgRinger\NewsImporticsxml\Mapper\XmlMapper;
-use GeorgRinger\News\Domain\Service\NewsImportService;
 use GeorgRinger\NewsImporticsxml\Domain\Model\Dto\TaskConfiguration;
 use GeorgRinger\NewsImporticsxml\Jobs\ImportJob;
 use Psr\Log\LoggerAwareInterface;
@@ -21,14 +18,25 @@ use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use TYPO3\CMS\Core\Context\Exception\AspectNotFoundException;
+use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
+use function chr;
+
+/**
+ * Class ImportCommand
+ */
 class ImportCommand extends Command implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
+    /**
+     * @return void
+     */
     protected function configure(): void
     {
         $this
@@ -37,98 +45,122 @@ class ImportCommand extends Command implements LoggerAwareInterface
                 InputArgument::REQUIRED,
                 $this->getLabel('path')
             )
-            ->addArgument(
+            ->addOption(
                 'pid',
-                InputArgument::REQUIRED,
+                'p',
+                InputOption::VALUE_REQUIRED,
                 $this->getLabel('pid')
             )
-            ->addArgument(
+            ->addOption(
                 'format',
-                InputArgument::REQUIRED,
+                'f',
+                InputOption::VALUE_REQUIRED,
                 $this->getLabel('format')
             )
-            ->addArgument(
+            ->addOption(
                 'slug',
-                InputArgument::OPTIONAL,
-                $this->getLabel('slug'),
-                true
+                's',
+                InputOption::VALUE_NONE,
+                $this->getLabel('slug')
             )
-            ->addArgument(
+            ->addOption(
                 'cleanBeforeImport',
-                InputArgument::OPTIONAL,
-                $this->getLabel('cleanBeforeImport'),
-                false
+                null,
+                InputOption::VALUE_NONE,
+                $this->getLabel('cleanBeforeImport')
             )
-            ->addArgument(
+            ->addOption(
                 'persistAsExternalUrl',
-                InputArgument::OPTIONAL,
-                $this->getLabel('persistAsExternalUrl'),
-                false
+                null,
+                InputOption::VALUE_NONE,
+                $this->getLabel('persistAsExternalUrl')
             )
-            ->addArgument(
+            ->addOption(
                 'email',
-                InputArgument::OPTIONAL,
+                null,
+                InputOption::VALUE_OPTIONAL,
                 $this->getLabel('email'),
                 ''
             )
-            ->addArgument(
+            ->addOption(
                 'mapping',
-                InputArgument::OPTIONAL,
+                null,
+                InputOption::VALUE_OPTIONAL,
                 $this->getLabel('mapping'),
                 ''
             )
             ->setDescription('Import of ICS and XML (RSS) into EXT:news');
     }
 
+    /**
+     * @param InputInterface  $input
+     * @param OutputInterface $output
+     *
+     * @return int
+     * @throws AspectNotFoundException
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle(
-            $input,
-            $output
-        );
+        $io = new SymfonyStyle($input, $output);
         $io->title($this->getDescription());
 
-        $xmlMapper = new XmlMapper();
-        $icsMapper = new IcsMapper();
-
-        $newsImportService = GeneralUtility::makeInstance(NewsImportService::class);
-        $importJob         = new ImportJob(
-            $xmlMapper,
-            $icsMapper,
-            $newsImportService
-        );
-        $importJob->setConfiguration($this->createConfiguration($input));
-        $importJob->run();
+        /** @var ImportJob $importJob */
+        $importJob = GeneralUtility::makeInstance(ImportJob::class);
+        $importJob
+            ->setConfiguration($this->createConfiguration($input))
+            ->run();
 
         return 0;
     }
 
+    /**
+     * @param InputInterface $input
+     *
+     * @return TaskConfiguration
+     */
     protected function createConfiguration(InputInterface $input): TaskConfiguration
     {
         $configuration = new TaskConfiguration();
-        $configuration->setPath((string) $input->getArgument('path'));
-        $configuration->setPid((int) $input->getArgument('pid'));
-        $configuration->setFormat($input->getArgument('format'));
-        $configuration->setCleanBeforeImport((bool) $input->getArgument('cleanBeforeImport'));
-        $configuration->setPersistAsExternalUrl((bool) $input->getArgument('persistAsExternalUrl'));
-        $configuration->setEmail($input->getArgument('email'));
-        $configuration->setSetSlug((bool) $input->getArgument('slug'));
+        $configuration
+            ->setPath($input->getArgument('path'))
+            ->setPid((int) $input->getOption('pid'))
+            ->setFormat($input->getOption('format'))
+            ->setCleanBeforeImport($input->getOption('cleanBeforeImport'))
+            ->setPersistAsExternalUrl($input->getOption('persistAsExternalUrl'))
+            ->setEmail($input->getOption('email'))
+            ->setSetSlug($input->getOption('slug'));
 
-        $mapping = (string) $input->getArgument('mapping');
-        if ($mapping) {
+        $mapping = $input->getOption('mapping');
+
+        if ($mapping !== '') {
             $mapping = str_replace(
                 '|',
                 chr(10),
                 $mapping
             );
+
             $configuration->setMapping($mapping);
         }
 
         return $configuration;
     }
 
+    /**
+     * @param string $key
+     *
+     * @return string
+     */
     protected function getLabel(string $key): string
     {
-        return $GLOBALS['LANG']->sL('LLL:EXT:news_importicsxml/Resources/Private/Language/locallang.xlf:' . $key);
+        return $this->getLanguageService()
+            ->sL('LLL:EXT:news_importicsxml/Resources/Private/Language/locallang.xlf:' . $key);
+    }
+
+    /**
+     * @return LanguageService
+     */
+    protected function getLanguageService(): LanguageService
+    {
+        return $GLOBALS['LANG'];
     }
 }

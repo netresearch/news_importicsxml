@@ -14,14 +14,29 @@ namespace GeorgRinger\NewsImporticsxml\Mapper;
 use Exception;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerInterface;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
+use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\DataHandling\SlugHelper;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
+/**
+ * Class AbstractMapper
+ */
 abstract class AbstractMapper implements MapperInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
+
+    /**
+     * @var Context
+     */
+    protected Context $context;
+
+    /**
+     * @var ConnectionPool
+     */
+    protected ConnectionPool $connectionPool;
 
     /**
      * @var SlugHelper
@@ -34,14 +49,16 @@ abstract class AbstractMapper implements MapperInterface, LoggerAwareInterface
     protected array $extensionConfiguration = [];
 
     /**
-     * @var ConnectionPool
+     * @param Context                $context
+     * @param ConnectionPool         $connectionPool
+     * @param ExtensionConfiguration $extensionConfiguration
      */
-    private ConnectionPool $connectionPool;
-
     public function __construct(
-        ExtensionConfiguration $extensionConfiguration,
+        Context $context,
         ConnectionPool $connectionPool,
+        ExtensionConfiguration $extensionConfiguration,
     ) {
+        $this->context = $context;
         $this->connectionPool = $connectionPool;
 
         $fieldConfig = $GLOBALS['TCA']['tx_news_domain_model_news']['columns']['path_segment']['config'];
@@ -61,18 +78,53 @@ abstract class AbstractMapper implements MapperInterface, LoggerAwareInterface
         }
     }
 
+    /**
+     * @param int    $pid
+     * @param string $importSource
+     *
+     * @return void
+     */
     protected function removeImportedRecordsFromPid(int $pid, string $importSource): void
     {
-        $connection = $this->connectionPool
-            ->getConnectionForTable('tx_news_domain_model_news');
+        $this->connectionPool
+            ->getConnectionForTable('tx_news_domain_model_news')
+            ->delete(
+                'tx_news_domain_model_news',
+                [
+                    'deleted'       => 0,
+                    'pid'           => $pid,
+                    'import_source' => $importSource,
+                ]
+            );
+    }
 
-        $connection->delete(
-            'tx_news_domain_model_news',
-            [
-                'deleted'       => 0,
-                'pid'           => $pid,
-                'import_source' => $importSource,
-            ]
-        );
+    /**
+     * @param string $message
+     */
+    protected function logInfo(string $message): void
+    {
+        if ($this->logger instanceof LoggerInterface) {
+            $this->logger->info($message);
+        }
+    }
+
+    /**
+     * @param string $message
+     */
+    protected function logWarning(string $message): void
+    {
+        if ($this->logger instanceof LoggerInterface) {
+            $this->logger->warning($message);
+        }
+    }
+
+    /**
+     * @param string $message
+     */
+    protected function logAlert(string $message): void
+    {
+        if ($this->logger instanceof LoggerInterface) {
+            $this->logger->alert($message);
+        }
     }
 }

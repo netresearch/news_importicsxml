@@ -17,6 +17,8 @@ use GeorgRinger\NewsImporticsxml\Mapper\IcsMapper;
 use GeorgRinger\NewsImporticsxml\Mapper\XmlMapper;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerInterface;
+use TYPO3\CMS\Core\Context\Exception\AspectNotFoundException;
 use UnexpectedValueException;
 
 use function count;
@@ -34,10 +36,19 @@ class ImportJob implements LoggerAwareInterface
      */
     protected TaskConfiguration $configuration;
 
+    /**
+     * @var XmlMapper
+     */
     protected XmlMapper $xmlMapper;
 
+    /**
+     * @var IcsMapper
+     */
     protected IcsMapper $icsMapper;
 
+    /**
+     * @var NewsImportService
+     */
     protected NewsImportService $newsImportService;
 
     /**
@@ -71,10 +82,12 @@ class ImportJob implements LoggerAwareInterface
 
     /**
      * Import remote content.
+     *
+     * @throws AspectNotFoundException
      */
     public function run(): void
     {
-        $this->logger->info(
+        $this->logInfo(
             sprintf(
                 'Starting import of "%s" (%s), reporting to "%s"',
                 $this->configuration->getPath(),
@@ -87,15 +100,19 @@ class ImportJob implements LoggerAwareInterface
             case 'xml':
                 $data = $this->xmlMapper->map($this->configuration);
                 break;
+
             case 'ics':
                 $data = $this->icsMapper->map($this->configuration);
                 break;
+
             default:
                 $message = sprintf(
                     'Format "%s" is not supported!',
                     $this->configuration->getFormat()
                 );
-                $this->logger->critical($message);
+
+                $this->logCritical($message);
+
                 throw new UnexpectedValueException(
                     $message,
                     1527601575
@@ -110,12 +127,33 @@ class ImportJob implements LoggerAwareInterface
      */
     protected function import(?array $data = null): void
     {
-        $this->logger->info(
+        $this->logInfo(
             sprintf(
                 'Starting import of %s records',
                 count($data)
             )
         );
+
         $this->newsImportService->import($data);
+    }
+
+    /**
+     * @param string $message
+     */
+    private function logInfo(string $message): void
+    {
+        if ($this->logger instanceof LoggerInterface) {
+            $this->logger->info($message);
+        }
+    }
+
+    /**
+     * @param string $message
+     */
+    private function logCritical(string $message): void
+    {
+        if ($this->logger instanceof LoggerInterface) {
+            $this->logger->critical($message);
+        }
     }
 }
