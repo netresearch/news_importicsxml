@@ -108,11 +108,15 @@
         "ci:test:php:fractor": [
             "@ci:fractor --dry-run"
         ],
+        "ci:test:php:unit": [
+            "XDEBUG_MODE=coverage && phpunit -c Build/UnitTests.xml"
+        ],
         "ci:test": [
             "@ci:test:php:lint",
             "@ci:test:php:phpstan",
             "@ci:test:php:rector",
             "@ci:test:php:fractor",
+            "@ci:test:php:unit",
             "@ci:test:php:cgl"
         ]
     }
