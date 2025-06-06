@@ -11,12 +11,12 @@ declare(strict_types=1);
 
 namespace GeorgRinger\NewsImporticsxml\Mapper;
 
-use TYPO3\CMS\Core\Context\Context;
 use GeorgRinger\NewsImporticsxml\Domain\Model\Dto\TaskConfiguration;
 use PicoFeed\Config\Config;
 use PicoFeed\Parser\Item;
 use PicoFeed\Reader\Reader;
 use SimpleXMLElement;
+use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 

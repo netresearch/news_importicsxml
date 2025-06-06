@@ -56,10 +56,14 @@ class ImportJob implements LoggerAwareInterface
 
     /**
      * @param TaskConfiguration $configuration
+     *
+     * @return ImportJob
      */
-    public function setConfiguration(TaskConfiguration $configuration): void
+    public function setConfiguration(TaskConfiguration $configuration): ImportJob
     {
         $this->configuration = $configuration;
+
+        return $this;
     }
 
     /**
@@ -92,7 +96,7 @@ class ImportJob implements LoggerAwareInterface
     /**
      * @param array|null $data
      */
-    protected function import(?array $data = null)
+    protected function import(?array $data = null): void
     {
         $this->logger->info(sprintf('Starting import of %s records', count($data)));
         $this->newsImportService->import($data);

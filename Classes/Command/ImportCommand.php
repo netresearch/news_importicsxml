@@ -29,7 +29,7 @@ class ImportCommand extends Command implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->addArgument('path', InputArgument::REQUIRED, $this->getLabel('path'))

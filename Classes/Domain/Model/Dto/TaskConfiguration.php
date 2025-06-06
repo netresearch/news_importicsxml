@@ -18,146 +18,190 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 class TaskConfiguration
 {
-    /** @var string */
-    protected $email;
+    /**
+     * @var string
+     */
+    protected string $email = '';
 
-    /** @var string */
-    protected $path;
+    /**
+     * @var string
+     */
+    protected string $path = '';
 
-    /** @var string */
-    protected $mapping;
+    /**
+     * @var string
+     */
+    protected string $mapping = '';
 
-    /** @var string */
-    protected $format;
+    /**
+     * @var string
+     */
+    protected string $format = '';
 
-    /** @var int */
-    protected $pid;
+    /**
+     * @var int
+     */
+    protected int $pid = 0;
 
-    /** @var bool */
-    protected $persistAsExternalUrl = false;
+    /**
+     * @var bool
+     */
+    protected bool $persistAsExternalUrl = false;
 
-    /** @var bool */
-    protected $cleanBeforeImport = false;
+    /**
+     * @var bool
+     */
+    protected bool $cleanBeforeImport = false;
 
-    /** @var bool */
-    protected $setSlug = false;
+    /**
+     * @var bool
+     */
+    protected bool $setSlug = false;
 
     /**
      * @return string
      */
-    public function getEmail()
+    public function getEmail(): string
     {
         return $this->email;
     }
 
     /**
      * @param string $email
+     *
+     * @return TaskConfiguration
      */
-    public function setEmail($email): void
+    public function setEmail(string $email): TaskConfiguration
     {
         $this->email = $email;
+
+        return $this;
     }
 
     /**
      * @return string
      */
-    public function getPath()
+    public function getPath(): string
     {
         return $this->path;
     }
 
     /**
      * @param string $path
+     *
+     * @return TaskConfiguration
      */
-    public function setPath($path): void
+    public function setPath(string $path): TaskConfiguration
     {
         $this->path = $path;
+
+        return $this;
     }
 
     /**
      * @return string
      */
-    public function getMapping()
+    public function getMapping(): string
     {
         return $this->mapping;
     }
 
     /**
      * @param string $mapping
+     *
+     * @return TaskConfiguration
      */
-    public function setMapping($mapping): void
+    public function setMapping(string $mapping): TaskConfiguration
     {
         $this->mapping = $mapping;
+
+        return $this;
     }
 
     /**
      * @return string
      */
-    public function getFormat()
+    public function getFormat(): string
     {
         return $this->format;
     }
 
     /**
      * @param string $format
+     *
+     * @return TaskConfiguration
      */
-    public function setFormat($format): void
+    public function setFormat(string $format): TaskConfiguration
     {
         $this->format = $format;
+
+        return $this;
     }
 
     /**
      * @return int
      */
-    public function getPid()
+    public function getPid(): int
     {
         return $this->pid;
     }
 
     /**
      * @param int $pid
+     *
+     * @return TaskConfiguration
      */
-    public function setPid($pid): void
+    public function setPid(int $pid): TaskConfiguration
     {
         $this->pid = $pid;
+
+        return $this;
     }
 
     /**
      * @return bool
      */
-    public function isPersistAsExternalUrl()
+    public function isPersistAsExternalUrl(): bool
     {
         return $this->persistAsExternalUrl;
     }
 
     /**
      * @param bool $persistAsExternalUrl
+     *
+     * @return TaskConfiguration
      */
-    public function setPersistAsExternalUrl($persistAsExternalUrl): void
+    public function setPersistAsExternalUrl(bool $persistAsExternalUrl): TaskConfiguration
     {
-        $this->persistAsExternalUrl = (bool) $persistAsExternalUrl;
+        $this->persistAsExternalUrl = $persistAsExternalUrl;
+
+        return $this;
     }
 
     /**
      * @return bool
      */
-    public function getCleanBeforeImport()
+    public function isCleanBeforeImport(): bool
     {
         return $this->cleanBeforeImport;
     }
 
     /**
      * @param bool $cleanBeforeImport
+     *
+     * @return TaskConfiguration
      */
-    public function setCleanBeforeImport($cleanBeforeImport): void
+    public function setCleanBeforeImport(bool $cleanBeforeImport): TaskConfiguration
     {
         $this->cleanBeforeImport = $cleanBeforeImport;
+
+        return $this;
     }
 
     /**
      * @return bool
      */
-    public function isSetSlug()
+    public function isSetSlug(): bool
     {
         return $this->setSlug;
     }
@@ -167,9 +211,11 @@ class TaskConfiguration
      *
      * @return TaskConfiguration
      */
-    public function setSetSlug(bool $setSlug): void
+    public function setSetSlug(bool $setSlug): TaskConfiguration
     {
         $this->setSlug = $setSlug;
+
+        return $this;
     }
 
     /**

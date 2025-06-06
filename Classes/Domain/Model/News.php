@@ -13,8 +13,10 @@ namespace GeorgRinger\NewsImporticsxml\Domain\Model;
 
 class News extends \GeorgRinger\News\Domain\Model\News
 {
-    /** @var string */
-    protected $newsImportData;
+    /**
+     * @var string
+     */
+    protected string $newsImportData;
 
     /**
      * @return string

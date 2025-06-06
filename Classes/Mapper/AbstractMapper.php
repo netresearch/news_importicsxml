@@ -23,8 +23,10 @@ abstract class AbstractMapper implements MapperInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    /** @var SlugHelper */
-    protected object $slugHelper;
+    /**
+     * @var SlugHelper
+     */
+    protected SlugHelper $slugHelper;
 
     protected array $extensionConfiguration = [];
 

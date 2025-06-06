@@ -20,7 +20,7 @@ interface MapperInterface
      *
      * @return array
      */
-    public function map(TaskConfiguration $configuration);
+    public function map(TaskConfiguration $configuration): array;
 
     /**
      * Get the import source identifier.

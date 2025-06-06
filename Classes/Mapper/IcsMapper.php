@@ -11,18 +11,20 @@ declare(strict_types=1);
 
 namespace GeorgRinger\NewsImporticsxml\Mapper;
 
-use TYPO3\CMS\Core\Context\Context;
 use GeorgRinger\NewsImporticsxml\Domain\Model\Dto\TaskConfiguration;
 use ICal\ICal;
 use RuntimeException;
+use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class IcsMapper extends AbstractMapper
 {
-    /** @var bool */
-    protected $pathIsModified = false;
+    /**
+     * @var bool
+     */
+    protected bool $pathIsModified = false;
 
     /**
      * @param TaskConfiguration $configuration
