@@ -1,20 +1,25 @@
 <?php
 
-$EM_CONF[$_EXTKEY] = [
-    'title' => 'Import of ICS & XML to EXT:news',
-    'description' => 'Versatile news import from ICS + XML (local files or remote URLs) including images and category mapping',
-    'category' => 'backend',
-    'author' => 'Georg Ringer',
-    'author_email' => 'mail@ringer.it',
-    'state' => 'beta',
-    'clearCacheOnLoad' => true,
-    'version' => '6.0.0',
-    'constraints' =>
+$EM_CONF['news_importicsxml'] = [
+    'title'            => 'Import of ICS & XML to EXT:news',
+    'description'      => 'Versatile news import from ICS + XML (local files or remote URLs) including images and category mapping',
+    'category'         => 'backend',
+    'author'           => 'Georg Ringer, Rico Sonntag',
+    'author_email'     => 'mail@ringer.it, rico.sonntag@netresearch.de',
+    'author_company' => 'Ringer IT, Netresearch DTT GmbH',
+    'state'            => 'stable',
+    'version'          => '6.0.0',
+    'constraints'      =>
         [
-            'depends' => [
-                'news' => '11.1.3-11.99.99'
+            'depends'   => [
+                'typo3' => '13.4.0-13.99.99',
+                'news' => '12.0.0-12.99.99',
             ],
-            'conflicts' => [],
-            'suggests' => [],
-        ]
+            'conflicts' => [
+
+            ],
+            'suggests'  => [
+
+            ],
+        ],
 ];
