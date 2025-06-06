@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace GeorgRinger\NewsImporticsxml\Hooks\Backend\Element;
+namespace GeorgRinger\NewsImporticsxml\Backend\Form\Element;
 
 use TYPO3\CMS\Backend\Form\AbstractNode;
 use TYPO3\CMS\Core\Utility\DebugUtility;

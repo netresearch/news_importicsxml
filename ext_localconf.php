@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-use GeorgRinger\NewsImporticsxml\Hooks\Backend\Element\JsonElement;
+use GeorgRinger\NewsImporticsxml\Backend\Form\Element\JsonElement;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
 call_user_func(
