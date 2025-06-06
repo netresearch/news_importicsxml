@@ -16,27 +16,18 @@ use GeorgRinger\NewsImporticsxml\Mapper\IcsMapper;
 use GeorgRinger\News\Domain\Service\NewsImportService;
 use GeorgRinger\NewsImporticsxml\Domain\Model\Dto\TaskConfiguration;
 use GeorgRinger\NewsImporticsxml\Jobs\ImportJob;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use TYPO3\CMS\Core\Log\Logger;
-use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-class ImportCommand extends Command
+class ImportCommand extends Command implements LoggerAwareInterface
 {
-    /**
-     * @var Logger
-     */
-    protected $logger;
-
-    public function __construct(?string $name = null)
-    {
-        parent::__construct($name);
-        $this->logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
-    }
+    use LoggerAwareTrait;
 
     protected function configure()
     {

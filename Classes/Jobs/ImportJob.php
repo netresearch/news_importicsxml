@@ -15,25 +15,21 @@ use GeorgRinger\News\Domain\Service\NewsImportService;
 use GeorgRinger\NewsImporticsxml\Domain\Model\Dto\TaskConfiguration;
 use GeorgRinger\NewsImporticsxml\Mapper\IcsMapper;
 use GeorgRinger\NewsImporticsxml\Mapper\XmlMapper;
-use TYPO3\CMS\Core\Log\Logger;
-use TYPO3\CMS\Core\Log\LogManager;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use UnexpectedValueException;
 
 /**
  * Base import handling.
  */
-class ImportJob
+class ImportJob implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     /**
      * @var TaskConfiguration
      */
-    protected $configuration;
-
-    /**
-     * @var Logger
-     */
-    protected $logger;
+    protected TaskConfiguration $configuration;
 
     protected XmlMapper $xmlMapper;
 
@@ -44,7 +40,6 @@ class ImportJob
     /**
      * ImportJob constructor.
      *
-     * @param TaskConfiguration $configuration
      * @param XmlMapper         $xmlMapper
      * @param IcsMapper         $icsMapper
      * @param NewsImportService $newsImportService
@@ -54,7 +49,6 @@ class ImportJob
         IcsMapper $icsMapper,
         NewsImportService $newsImportService,
     ) {
-        $this->logger            = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
         $this->xmlMapper         = $xmlMapper;
         $this->icsMapper         = $icsMapper;
         $this->newsImportService = $newsImportService;

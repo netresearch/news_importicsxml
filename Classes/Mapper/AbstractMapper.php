@@ -12,17 +12,16 @@ declare(strict_types=1);
 namespace GeorgRinger\NewsImporticsxml\Mapper;
 
 use Exception;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\DataHandling\SlugHelper;
-use TYPO3\CMS\Core\Log\Logger;
-use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-class AbstractMapper
+abstract class AbstractMapper implements MapperInterface, LoggerAwareInterface
 {
-    /** @var Logger */
-    protected $logger;
+    use LoggerAwareTrait;
 
     /** @var SlugHelper */
     protected object $slugHelper;
