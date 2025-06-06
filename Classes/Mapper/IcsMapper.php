@@ -19,7 +19,7 @@ use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-class IcsMapper extends AbstractMapper implements MapperInterface
+class IcsMapper extends AbstractMapper
 {
     /** @var bool */
     protected $pathIsModified = false;

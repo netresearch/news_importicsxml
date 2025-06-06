@@ -20,7 +20,7 @@ use SimpleXMLElement;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-class XmlMapper extends AbstractMapper implements MapperInterface
+class XmlMapper extends AbstractMapper
 {
     /**
      * @param TaskConfiguration $configuration
