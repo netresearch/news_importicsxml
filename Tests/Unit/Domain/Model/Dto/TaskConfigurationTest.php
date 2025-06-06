@@ -1,4 +1,14 @@
 <?php
+
+/**
+ * This file is part of the package georgringer/news-importicsxml.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
 namespace GeorgRinger\NewsImporticsxml\Tests\Unit\Domain\Model\Dto;
 
 /*
@@ -19,14 +29,13 @@ use TYPO3\CMS\Core\Tests\UnitTestCase;
 
 class TaskConfigurationTest extends UnitTestCase
 {
-
     /**
      * @var TaskConfiguration
      */
     protected $instance;
 
     /**
-     * Setup
+     * Setup.
      */
     protected function setUp()
     {

@@ -1,4 +1,12 @@
 <?php
+
+/**
+ * This file is part of the package georgringer/news-importicsxml.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE file that was distributed with this source code.
+ */
+
 declare(strict_types=1);
 
 namespace GeorgRinger\NewsImporticsxml\Mapper;
@@ -10,20 +18,14 @@ use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-/**
- * This file is part of the "news_importicsxml" Extension for TYPO3 CMS.
- *
- * For the full copyright and license information, please read the
- * LICENSE.txt file that was distributed with this source code.
- */
 class IcsMapper extends AbstractMapper implements MapperInterface
 {
-
     /** @var bool */
     protected $pathIsModified = false;
 
     /**
      * @param TaskConfiguration $configuration
+     *
      * @return array
      */
     public function map(TaskConfiguration $configuration)
@@ -37,17 +39,17 @@ class IcsMapper extends AbstractMapper implements MapperInterface
 
         $idCount = [];
 
-        require_once(ExtensionManagementUtility::extPath('news_importicsxml') . 'Resources/Private/Contrib/ICal.php');
-	require_once(ExtensionManagementUtility::extPath('news_importicsxml') . 'Resources/Private/Contrib/Event.php');
+        require_once ExtensionManagementUtility::extPath('news_importicsxml') . 'Resources/Private/Contrib/ICal.php';
+        require_once ExtensionManagementUtility::extPath('news_importicsxml') . 'Resources/Private/Contrib/Event.php';
         $iCalService = new ICal($path);
-        $events = $iCalService->events();
+        $events      = $iCalService->events();
 
         foreach ($events as $event) {
-            $id = strlen($event->uid) < 90 ? $event->uid : md5($event>uid);
+            $id = strlen($event->uid) < 90 ? $event->uid : md5($event > uid);
             if (!isset($idCount[$id])) {
                 $idCount[$id] = 1;
             } else {
-                $idCount[$id]++;
+                ++$idCount[$id];
             }
             $datetime = $iCalService->iCalDateToUnixTimestamp($event->dtstart ?? $event->dtstamp);
             if ($datetime === false) {
@@ -56,38 +58,38 @@ class IcsMapper extends AbstractMapper implements MapperInterface
 
             $singleItem = [
                 'import_source' => $this->getImportSource(),
-                'import_id' => $id . '-' . $idCount[$id],
-                'crdate' => $GLOBALS['EXEC_TIME'],
-                'cruser_id' => $GLOBALS['BE_USER'] ?? $GLOBALS['BE_USER']->user['uid'] ?? 0,
-                'type' => 0,
-                'hidden' => 0,
-                'pid' => $configuration->getPid(),
-                'title' => $this->cleanup((string)$event->summary),
-                'bodytext' => $this->cleanup((string)$event->description),
-                'datetime' => $datetime,
-                'archive' =>  (isset($event->dtend) ? $iCalService->iCalDateToUnixTimestamp($event->dtend)+86400 : ''),
-                'categories' => $this->getCategories((array)($event->categories_array ?? []), $configuration),
-                '_dynamicData' => [
-                    'location' => (isset($event->location) ? $event->location : ''),
-                    'datetime_end' => (isset($event->dtend) ? $iCalService->iCalDateToUnixTimestamp($event->dtend) : ''),
-                    'reference' => $event,
+                'import_id'     => $id . '-' . $idCount[$id],
+                'crdate'        => $GLOBALS['EXEC_TIME'],
+                'cruser_id'     => $GLOBALS['BE_USER'] ?? $GLOBALS['BE_USER']->user['uid'] ?? 0,
+                'type'          => 0,
+                'hidden'        => 0,
+                'pid'           => $configuration->getPid(),
+                'title'         => $this->cleanup((string) $event->summary),
+                'bodytext'      => $this->cleanup((string) $event->description),
+                'datetime'      => $datetime,
+                'archive'       => (isset($event->dtend) ? $iCalService->iCalDateToUnixTimestamp($event->dtend) + 86400 : ''),
+                'categories'    => $this->getCategories((array) ($event->categories_array ?? []), $configuration),
+                '_dynamicData'  => [
+                    'location'          => (isset($event->location) ? $event->location : ''),
+                    'datetime_end'      => (isset($event->dtend) ? $iCalService->iCalDateToUnixTimestamp($event->dtend) : ''),
+                    'reference'         => $event,
                     'news_importicsxml' => [
                         'importDate' => date('d.m.Y h:i:s', $GLOBALS['EXEC_TIME']),
-                        'feed' => $configuration->getPath(),
-                        'UID' => $event->uid,
-                        'VARIANT' => $idCount[$id],
-                        'LOCATION' => (isset($event->location) ? $event->location : ''),
-                        'DTSTART' => $event->dtstart ?? '',
-                        'DTSTAMP' => $event->dtstamp ?? '',
-                        'DTEND' => $event->dtend ?? '',
-                        'PRIORITY' => $event->priority ?? '',
-                        'SEQUENCE' => $event->sequence,
-                        'STATUS' => $event->status ?? '',
-                        'TRANSP' => $event->transp ?? '',
-                        'URL' => $event->url ?? '',
-                        'ATTACH' => $event->attach ?? '',
-                        'SUMMARY' => $event->summary ?? '',
-                    ]
+                        'feed'       => $configuration->getPath(),
+                        'UID'        => $event->uid,
+                        'VARIANT'    => $idCount[$id],
+                        'LOCATION'   => (isset($event->location) ? $event->location : ''),
+                        'DTSTART'    => $event->dtstart ?? '',
+                        'DTSTAMP'    => $event->dtstamp ?? '',
+                        'DTEND'      => $event->dtend ?? '',
+                        'PRIORITY'   => $event->priority ?? '',
+                        'SEQUENCE'   => $event->sequence,
+                        'STATUS'     => $event->status ?? '',
+                        'TRANSP'     => $event->transp ?? '',
+                        'URL'        => $event->url ?? '',
+                        'ATTACH'     => $event->attach ?? '',
+                        'SUMMARY'    => $event->summary ?? '',
+                    ],
                 ],
             ];
 
@@ -105,8 +107,9 @@ class IcsMapper extends AbstractMapper implements MapperInterface
     }
 
     /**
-     * @param array $categoryTitles
+     * @param array             $categoryTitles
      * @param TaskConfiguration $configuration
+     *
      * @return array
      */
     protected function getCategories(array $categoryTitles, TaskConfiguration $configuration): array
@@ -137,11 +140,12 @@ class IcsMapper extends AbstractMapper implements MapperInterface
 
     /**
      * @param string $content
+     *
      * @return string
      */
     protected function cleanup(string $content): string
     {
-        $search = ['\\,', '\\n'];
+        $search  = ['\\,', '\\n'];
         $replace = [',', chr(10)];
 
         return str_replace($search, $replace, $content);
@@ -149,6 +153,7 @@ class IcsMapper extends AbstractMapper implements MapperInterface
 
     /**
      * @param TaskConfiguration $configuration
+     *
      * @return string
      */
     protected function getFileContent(TaskConfiguration $configuration)
@@ -180,6 +185,7 @@ class IcsMapper extends AbstractMapper implements MapperInterface
             $this->logger->alert($message);
             throw new RuntimeException($message);
         }
+
         return $response;
     }
 

@@ -1,4 +1,14 @@
 <?php
+
+/**
+ * This file is part of the package georgringer/news-importicsxml.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
 namespace GeorgRinger\NewsImporticsxml\Tests\Unit\Tasks;
 
 /*
@@ -19,19 +29,18 @@ use TYPO3\CMS\Core\Tests\UnitTestCase;
 
 class ImportTaskTest extends UnitTestCase
 {
-
     /**
      * @test
      */
     public function configurationIsCreatedByProperties()
     {
         $expectedConfiguration = new TaskConfiguration();
-        $props = [
-            'email' => 'fo@bar.com',
-            'pid' => '123',
-            'path' => 'fileadmin/fo.xml',
+        $props                 = [
+            'email'   => 'fo@bar.com',
+            'pid'     => '123',
+            'path'    => 'fileadmin/fo.xml',
             'mapping' => 'map:mapper',
-            'format' => 'xml'
+            'format'  => 'xml',
         ];
         $task = $this->getAccessibleMock('GeorgRinger\NewsImporticsxml\Tasks\ImportTask', ['dummy'], [], '', false);
         foreach ($props as $key => $value) {

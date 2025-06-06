@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * This file is part of the package georgringer/news-importicsxml.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE file that was distributed with this source code.
+ */
+
 declare(strict_types=1);
 
 namespace GeorgRinger\NewsImporticsxml\Command;
@@ -19,13 +26,12 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class ImportCommand extends Command
 {
-
     /**
      * @var Logger
      */
     protected $logger;
 
-    public function __construct(string $name = null)
+    public function __construct(?string $name = null)
     {
         parent::__construct($name);
         $this->logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
@@ -54,7 +60,7 @@ class ImportCommand extends Command
         $icsMapper = new Mapper\IcsMapper();
 
         $newsImportService = GeneralUtility::makeInstance(NewsImportService::class);
-        $importJob = new ImportJob($xmlMapper, $icsMapper, $newsImportService);
+        $importJob         = new ImportJob($xmlMapper, $icsMapper, $newsImportService);
         $importJob->setConfiguration($this->createConfiguration($input));
         $importJob->run();
 
@@ -64,15 +70,15 @@ class ImportCommand extends Command
     protected function createConfiguration(InputInterface $input): TaskConfiguration
     {
         $configuration = new TaskConfiguration();
-        $configuration->setPath((string)$input->getArgument('path'));
-        $configuration->setPid((int)$input->getArgument('pid'));
+        $configuration->setPath((string) $input->getArgument('path'));
+        $configuration->setPid((int) $input->getArgument('pid'));
         $configuration->setFormat($input->getArgument('format'));
-        $configuration->setCleanBeforeImport((bool)$input->getArgument('cleanBeforeImport'));
-        $configuration->setPersistAsExternalUrl((bool)$input->getArgument('persistAsExternalUrl'));
+        $configuration->setCleanBeforeImport((bool) $input->getArgument('cleanBeforeImport'));
+        $configuration->setPersistAsExternalUrl((bool) $input->getArgument('persistAsExternalUrl'));
         $configuration->setEmail($input->getArgument('email'));
-        $configuration->setSetSlug((bool)$input->getArgument('slug'));
+        $configuration->setSetSlug((bool) $input->getArgument('slug'));
 
-        $mapping = (string)$input->getArgument('mapping');
+        $mapping = (string) $input->getArgument('mapping');
         if ($mapping) {
             $mapping = str_replace('|', chr(10), $mapping);
             $configuration->setMapping($mapping);
@@ -85,5 +91,4 @@ class ImportCommand extends Command
     {
         return $GLOBALS['LANG']->sL('LLL:EXT:news_importicsxml/Resources/Private/Language/locallang.xlf:' . $key);
     }
-
 }

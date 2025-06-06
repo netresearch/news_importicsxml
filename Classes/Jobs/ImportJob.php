@@ -1,30 +1,30 @@
 <?php
 
-namespace GeorgRinger\NewsImporticsxml\Jobs;
-
-use TYPO3\CMS\Extbase\Object\ObjectManagerInterface;
-use GeorgRinger\NewsImporticsxml\Mapper\XmlMapper;
-use GeorgRinger\NewsImporticsxml\Mapper\IcsMapper;
-use GeorgRinger\News\Domain\Service\NewsImportService;
 /**
- * This file is part of the "news_importicsxml" Extension for TYPO3 CMS.
+ * This file is part of the package georgringer/news-importicsxml.
  *
  * For the full copyright and license information, please read the
- * LICENSE.txt file that was distributed with this source code.
+ * LICENSE file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
+namespace GeorgRinger\NewsImporticsxml\Jobs;
+
+use GeorgRinger\News\Domain\Service\NewsImportService;
 use GeorgRinger\NewsImporticsxml\Domain\Model\Dto\TaskConfiguration;
+use GeorgRinger\NewsImporticsxml\Mapper\IcsMapper;
+use GeorgRinger\NewsImporticsxml\Mapper\XmlMapper;
 use TYPO3\CMS\Core\Log\Logger;
 use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use UnexpectedValueException;
 
 /**
- * Base import handling
+ * Base import handling.
  */
 class ImportJob
 {
-
     /**
      * @var TaskConfiguration
      */
@@ -36,35 +36,36 @@ class ImportJob
     protected $logger;
 
     /**
-     * @var \GeorgRinger\NewsImporticsxml\Mapper\XmlMapper
+     * @var XmlMapper
      */
     protected $xmlMapper;
 
     /**
-     * @var \GeorgRinger\NewsImporticsxml\Mapper\IcsMapper
+     * @var IcsMapper
      */
     protected $icsMapper;
 
     /**
-     * @var \GeorgRinger\News\Domain\Service\NewsImportService
+     * @var NewsImportService
      */
     protected $newsImportService;
 
     /**
      * ImportJob constructor.
+     *
      * @param TaskConfiguration $configuration
-     * @param XmlMapper $xmlMapper
-     * @param IcsMapper $icsMapper
+     * @param XmlMapper         $xmlMapper
+     * @param IcsMapper         $icsMapper
      * @param NewsImportService $newsImportService
      */
     public function __construct(
         XmlMapper $xmlMapper,
         IcsMapper $icsMapper,
-        NewsImportService $newsImportService
+        NewsImportService $newsImportService,
     ) {
-        $this->logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
-        $this->xmlMapper = $xmlMapper;
-        $this->icsMapper = $icsMapper;
+        $this->logger            = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
+        $this->xmlMapper         = $xmlMapper;
+        $this->icsMapper         = $icsMapper;
         $this->newsImportService = $newsImportService;
     }
 
@@ -77,7 +78,7 @@ class ImportJob
     }
 
     /**
-     * Import remote content
+     * Import remote content.
      */
     public function run()
     {
@@ -106,10 +107,9 @@ class ImportJob
     /**
      * @param array|null $data
      */
-    protected function import(array $data = null)
+    protected function import(?array $data = null)
     {
         $this->logger->info(sprintf('Starting import of %s records', count($data)));
         $this->newsImportService->import($data);
     }
-
 }

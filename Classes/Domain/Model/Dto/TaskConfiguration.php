@@ -1,21 +1,23 @@
 <?php
 
-namespace GeorgRinger\NewsImporticsxml\Domain\Model\Dto;
-
 /**
- * This file is part of the "news_importicsxml" Extension for TYPO3 CMS.
+ * This file is part of the package georgringer/news-importicsxml.
  *
  * For the full copyright and license information, please read the
- * LICENSE.txt file that was distributed with this source code.
+ * LICENSE file that was distributed with this source code.
  */
+
+declare(strict_types=1);
+
+namespace GeorgRinger\NewsImporticsxml\Domain\Model\Dto;
+
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
- * Configuration of the import task
+ * Configuration of the import task.
  */
 class TaskConfiguration
 {
-
     /** @var string */
     protected $email;
 
@@ -133,7 +135,7 @@ class TaskConfiguration
      */
     public function setPersistAsExternalUrl($persistAsExternalUrl)
     {
-        $this->persistAsExternalUrl = (bool)$persistAsExternalUrl;
+        $this->persistAsExternalUrl = (bool) $persistAsExternalUrl;
     }
 
     /**
@@ -162,6 +164,7 @@ class TaskConfiguration
 
     /**
      * @param bool $setSlug
+     *
      * @return TaskConfiguration
      */
     public function setSetSlug(bool $setSlug)
@@ -169,21 +172,19 @@ class TaskConfiguration
         $this->setSlug = $setSlug;
     }
 
-
-
     /**
      * Split the configuration from multiline to array
      * 123:This is a category title
-     * 345:And another one
+     * 345:And another one.
      *
      * @return array
      */
     public function getMappingConfigured()
     {
-        $out = [];
+        $out   = [];
         $lines = GeneralUtility::trimExplode('|', $this->mapping, true);
         foreach ($lines as $line) {
-            $split = GeneralUtility::trimExplode(':', $line, true, 2);
+            $split          = GeneralUtility::trimExplode(':', $line, true, 2);
             $out[$split[1]] = $split[0];
         }
 

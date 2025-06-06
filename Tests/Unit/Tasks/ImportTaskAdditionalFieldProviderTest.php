@@ -1,4 +1,14 @@
 <?php
+
+/**
+ * This file is part of the package georgringer/news-importicsxml.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
 namespace GeorgRinger\NewsImporticsxml\Tests\Unit\Tasks;
 
 /*
@@ -20,9 +30,9 @@ use TYPO3\CMS\Scheduler\Controller\SchedulerModuleController;
 
 class ImportTaskAdditionalFieldProviderTest extends UnitTestCase
 {
-
     /**
      * @test
+     *
      * @dataProvider propertyValidationDataProvider
      */
     public function propertyValidation($data, $result)
@@ -40,58 +50,58 @@ class ImportTaskAdditionalFieldProviderTest extends UnitTestCase
         return [
             'works' => [
                 [
-                    'email' => 'fo@bar.com',
-                    'path' => 'fileadmin/xy.xml',
-                    'pid' => '123',
+                    'email'  => 'fo@bar.com',
+                    'path'   => 'fileadmin/xy.xml',
+                    'pid'    => '123',
                     'format' => 'xml',
                 ],
-                true
+                true,
             ],
             'wrongEmail' => [
                 [
-                    'email' => 'lorem ipsum',
-                    'path' => 'fileadmin/xy.xml',
-                    'pid' => '123',
+                    'email'  => 'lorem ipsum',
+                    'path'   => 'fileadmin/xy.xml',
+                    'pid'    => '123',
                     'format' => 'xml',
                 ],
-                false
+                false,
             ],
             'optionalEmailIsOk' => [
                 [
-                    'email' => '',
-                    'path' => 'fileadmin/xy.xml',
-                    'pid' => '123',
+                    'email'  => '',
+                    'path'   => 'fileadmin/xy.xml',
+                    'pid'    => '123',
                     'format' => 'xml',
                 ],
-                true
+                true,
             ],
             'wrongPid' => [
                 [
-                    'email' => '',
-                    'path' => 'fileadmin/xy.xml',
-                    'pid' => 'text',
+                    'email'  => '',
+                    'path'   => 'fileadmin/xy.xml',
+                    'pid'    => 'text',
                     'format' => 'xml',
                 ],
-                false
+                false,
             ],
             'noFormat' => [
                 [
-                    'email' => '',
-                    'path' => 'fileadmin/xy.xml',
-                    'pid' => 'text',
+                    'email'  => '',
+                    'path'   => 'fileadmin/xy.xml',
+                    'pid'    => 'text',
                     'format' => '',
                 ],
-                false
+                false,
             ],
             'noPath' => [
                 [
-                    'email' => '',
-                    'path' => '',
-                    'pid' => 'text',
+                    'email'  => '',
+                    'path'   => '',
+                    'pid'    => 'text',
                     'format' => 'xml',
                 ],
-                false
-            ]
+                false,
+            ],
         ];
     }
 }
