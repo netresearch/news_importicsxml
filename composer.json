@@ -31,12 +31,6 @@
         "issues": "https://github.com/netresearch/news-importicsxml/issues",
         "source": "https://github.com/netresearch/news-importicsxml"
     },
-    "repositories": {
-        "infostars/picofeed": {
-            "type": "git",
-            "url": "https://github.com/infostars/picofeed.git"
-        }
-    },
     "config": {
         "bin-dir": ".build/bin",
         "vendor-dir": ".build/vendor",
@@ -55,7 +49,8 @@
         "typo3/cms-core": "^13.4",
         "georgringer/news": "^12.3",
         "johngrogg/ics-parser": "^3.4",
-        "infostars/picofeed": "dev-master"
+        "laminas/laminas-feed": "^2.0",
+        "laminas/laminas-http": "^2.0"
     },
     "require-dev": {
         "typo3/testing-framework": "^9.0",
