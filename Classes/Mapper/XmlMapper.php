@@ -12,26 +12,26 @@ declare(strict_types=1);
 namespace GeorgRinger\NewsImporticsxml\Mapper;
 
 use GeorgRinger\NewsImporticsxml\Domain\Model\Dto\TaskConfiguration;
-use PicoFeed\Config\Config;
-use PicoFeed\Parser\Item;
-use PicoFeed\Reader\Reader;
-use SimpleXMLElement;
+use Laminas\Feed\Reader\Collection\Category;
+use Laminas\Feed\Reader\Entry\EntryInterface;
+use Laminas\Feed\Reader\Reader;
 use TYPO3\CMS\Core\Context\Exception\AspectNotFoundException;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 use function in_array;
 use function sprintf;
 use function strlen;
 
 /**
- * Class XmlMapper
+ * Class XmlMapper.
  */
 class XmlMapper extends AbstractMapper
 {
     /**
      * @param TaskConfiguration $configuration
      *
-     * @return array<mixed>
+     * @return list<array<string, int|string|bool|array<string, mixed>>>
      *
      * @throws AspectNotFoundException
      */
@@ -46,60 +46,49 @@ class XmlMapper extends AbstractMapper
 
         $data = [];
 
-        $readerConfig = new Config();
-        $readerConfig->setContentFiltering(false);
+        $feed   = Reader::import($configuration->getPath());
+        $crdate = (int) $this->context->getPropertyFromAspect('date', 'timestamp');
 
-        $reader   = new Reader($readerConfig);
-        $resource = $reader->discover($configuration->getPath());
-
-        $parser = $reader->getParser(
-            $resource->getUrl(),
-            $resource->getContent(),
-            $resource->getEncoding()
-        );
-
-        /** @var Item[] $items */
-        $items = $parser->execute()->getItems();
-
-        foreach ($items as $item) {
+        /** @var EntryInterface $item */
+        foreach ($feed as $item) {
             $id = strlen($item->getId()) > 100 ? md5($item->getId()) : $item->getId();
 
-            /** @var Item $item */
             $singleItem = [
                 'import_source' => $this->getImportSource(),
                 'import_id'     => $id,
-                'crdate'        => $this->context->getPropertyFromAspect(
-                    'date',
-                    'timestamp'
-                ),
-                'cruser_id'  => isset($GLOBALS['BE_USER'], $GLOBALS['BE_USER']->user) ? $GLOBALS['BE_USER']->user['uid'] : 0,
-                'type'       => 0,
-                'hidden'     => 0,
-                'pid'        => $configuration->getPid(),
-                'title'      => $item->getTitle(),
-                'teaser'     => trim((string) $item->xml->description),
-                'bodytext'   => trim($this->cleanup($item->getContent())),
-                'author'     => $item->getAuthor(),
-                'datetime'   => $item->getDate()?->getTimestamp() ?? 0,
-                'categories' => $this->getCategories($item->xml, $configuration),
-                '_dynamicData' => [
+                'crdate'        => $crdate,
+                'cruser_id'     => isset($GLOBALS['BE_USER'], $GLOBALS['BE_USER']->user) ? $GLOBALS['BE_USER']->user['uid'] : 0,
+                'type'          => 0,
+                'hidden'        => 0,
+                'pid'           => $configuration->getPid(),
+                'title'         => $item->getTitle(),
+                'teaser'        => trim($item->getDescription() ?? ''),
+                'bodytext'      => trim($this->cleanup($item->getContent() ?? '')),
+                'author'        => $item->getAuthor() ?? '',
+                'datetime'      => $item->getDateCreated()?->getTimestamp() ?? 0,
+                'categories'    => $this->getCategories($item->getCategories(), $configuration),
+                '_dynamicData'  => [
                     'reference'         => $item,
                     'news_importicsxml' => [
-                        'importDate' => date('d.m.Y h:i:s', $this->context->getPropertyFromAspect('date', 'timestamp')),
-                        'feed' => $configuration->getPath(),
-                        'url'  => $item->getUrl(),
-                        'guid' => $item->getTag('guid'),
+                        'importDate' => date('d.m.Y h:i:s', $crdate),
+                        'feed'       => $configuration->getPath(),
+                        'url'        => trim($item->getLink() ?? ''),
+                        'guid'       => $item->getId() ?? '',
                     ],
                 ],
             ];
-            $this->addRemoteFiles(
-                $singleItem,
-                $item->xml,
-                $configuration->getPath()
-            );
+
+            if ($item->getEnclosure() !== null) {
+                $this->addRemoteFiles(
+                    $singleItem,
+                    $item->getEnclosure(),
+                    $configuration->getPath()
+                );
+            }
+
             if ($configuration->isPersistAsExternalUrl()) {
                 $singleItem['type']        = 2;
-                $singleItem['externalurl'] = $item->getUrl();
+                $singleItem['externalurl'] = $item->getLink() ?? '';
             }
 
             if ($configuration->isSetSlug()) {
@@ -113,13 +102,13 @@ class XmlMapper extends AbstractMapper
     }
 
     /**
-     * @param array<string, mixed>            $singleItem
-     * @param SimpleXMLElement $xml
-     * @param string           $xmlPath
+     * @param array<string, mixed> $singleItem
+     * @param object               $enclosure
+     * @param string               $xmlPath
      *
      * @return void
      */
-    protected function addRemoteFiles(array &$singleItem, SimpleXMLElement $xml, string $xmlPath): void
+    protected function addRemoteFiles(array &$singleItem, object $enclosure, string $xmlPath): void
     {
         $extensions = [
             'image/jpg'       => 'jpg',
@@ -133,74 +122,59 @@ class XmlMapper extends AbstractMapper
         $targetPath = $targetPath !== '' ? $targetPath : 'uploads/tx_newsimporticsxml';
         $targetPath = '/' . $targetPath . '/';
 
-        foreach ($xml->enclosure as $enclosure) {
-            $url      = (string) $enclosure->attributes()['url'];
-            $mimeType = (string) $enclosure->attributes()['type'];
+        $url      = $enclosure->url;
+        $mimeType = $enclosure->type;
 
-            if (($url !== '') && isset($extensions[$mimeType])) {
-                $urlInfo  = parse_url($url);
-                $fileInfo = pathinfo($urlInfo['path']);
-                $path     = $targetPath . substr(md5($xmlPath), 0, 10) . $fileInfo['dirname'] . '/';
+        if (($url !== '') && isset($extensions[$mimeType])) {
+            $urlInfo  = parse_url($url);
+            $fileInfo = pathinfo($urlInfo['path']);
+            $path     = $targetPath . substr(md5($xmlPath), 0, 10) . $fileInfo['dirname'] . '/';
 
-                GeneralUtility::mkdir_deep(Environment::getPublicPath() . $path);
+            GeneralUtility::mkdir_deep(Environment::getPublicPath() . $path);
 
-                $file = $path . rawurldecode($fileInfo['basename']);
+            $file = $path . rawurldecode($fileInfo['basename']);
 
-                if (is_file(Environment::getPublicPath() . '/' . $file)) {
-                    $status = true;
+            if (is_file(Environment::getPublicPath() . '/' . $file)) {
+                $status = true;
+            } else {
+                $content = GeneralUtility::getUrl($url);
+                $status  = GeneralUtility::writeFile(Environment::getPublicPath() . '/' . $file, $content);
+            }
+
+            if ($status) {
+                if (in_array($extensions[$mimeType], ['gif', 'jpeg', 'jpg', 'png'], true)) {
+                    $singleItem['media'][] = [
+                        'image'         => $file,
+                        'showinpreview' => true,
+                    ];
                 } else {
-                    $content = GeneralUtility::getUrl($url);
-                    $status  = GeneralUtility::writeFile(
-                        Environment::getPublicPath() . '/' . $file,
-                        $content
-                    );
-                }
-
-                if ($status) {
-                    if (in_array(
-                        $extensions[$mimeType],
-                        [
-                            'gif',
-                            'jpeg',
-                            'jpg',
-                            'png',
-                        ],
-                        true
-                    )) {
-                        $singleItem['media'][] = [
-                            'image'         => $file,
-                            'showinpreview' => true,
-                        ];
-                    } else {
-                        $singleItem['related_files'][] = [
-                            'file' => $file,
-                        ];
-                    }
+                    $singleItem['related_files'][] = [
+                        'file' => $file,
+                    ];
                 }
             }
         }
     }
 
     /**
-     * @param SimpleXMLElement  $xml
+     * @param Category          $categories
      * @param TaskConfiguration $configuration
      *
-     * @return array<mixed>
+     * @return string[]
      */
-    protected function getCategories(SimpleXMLElement $xml, TaskConfiguration $configuration): array
+    protected function getCategories(Category $categories, TaskConfiguration $configuration): array
     {
         $categoryIds    = [];
         $categoryTitles = [];
-        $categories     = $xml->category;
 
-        if ($categories) {
-            foreach ($categories as $cat) {
-                $categoryTitles[] = (string) $cat;
+        if ($categories->count() > 0) {
+            foreach ($categories->getValues() as $category) {
+                $categoryTitles[] = $category;
             }
         }
 
         if ($categoryTitles !== []) {
-            if ($configuration->getMapping()) {
+            if ($configuration->getMapping() !== '') {
                 $categoryMapping = $configuration->getMappingConfigured();
 
                 foreach ($categoryTitles as $title) {

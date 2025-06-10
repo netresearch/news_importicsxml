@@ -123,9 +123,9 @@ class ImportJob implements LoggerAwareInterface
     }
 
     /**
-     * @param array|null $data
+     * @param list<array<string, int|string|bool|array<string, mixed>>> $data
      */
-    protected function import(?array $data = null): void
+    private function import(array $data): void
     {
         $this->logInfo(
             sprintf(

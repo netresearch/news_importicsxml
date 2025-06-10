@@ -18,13 +18,14 @@ use RuntimeException;
 use TYPO3\CMS\Core\Context\Exception\AspectNotFoundException;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 use function chr;
-use function is_array;
+use function is_string;
 use function sprintf;
 use function strlen;
 
 /**
- * Class IcsMapper
+ * Class IcsMapper.
  */
 class IcsMapper extends AbstractMapper
 {
@@ -36,7 +37,7 @@ class IcsMapper extends AbstractMapper
     /**
      * @param TaskConfiguration $configuration
      *
-     * @return array
+     * @return list<array<string, int|string|bool|array<string, mixed>>>
      *
      * @throws AspectNotFoundException
      */
@@ -52,7 +53,7 @@ class IcsMapper extends AbstractMapper
         $data = [];
         $path = $this->getFileContent($configuration);
 
-        $idCount = [];
+        $idCount     = [];
         $iCalService = new ICal($path);
 
         /** @var Event[] $events */
@@ -67,7 +68,8 @@ class IcsMapper extends AbstractMapper
                 $idCount[$id] = 1;
             }
 
-            $datetime = $iCalService->iCalDateToUnixTimestamp($event->dtstart ?? $event->dtstamp);
+            $crdate   = (int) $this->context->getPropertyFromAspect('date', 'timestamp');
+            $datetime = $iCalService->iCalDateToUnixTimestamp($event->dtstart);
 
             if ($datetime === 0) {
                 $datetime = $iCalService->iCalDateToUnixTimestamp($event->dtstamp);
@@ -76,7 +78,7 @@ class IcsMapper extends AbstractMapper
             $singleItem = [
                 'import_source' => $this->getImportSource(),
                 'import_id'     => $id . '-' . $idCount[$id],
-                'crdate'        => $this->context->getPropertyFromAspect('date', 'timestamp'),
+                'crdate'        => $crdate,
                 'cruser_id'     => $GLOBALS['BE_USER'] ?? $GLOBALS['BE_USER']->user['uid'] ?? 0,
                 'type'          => 0,
                 'hidden'        => 0,
@@ -84,14 +86,14 @@ class IcsMapper extends AbstractMapper
                 'title'         => $this->cleanup($event->summary),
                 'bodytext'      => $this->cleanup($event->description ?? ''),
                 'datetime'      => $datetime,
-                'archive'       => isset($event->dtend) ? $iCalService->iCalDateToUnixTimestamp($event->dtend) + 86400 : '',
-                'categories'    => $this->getCategories(isset($event->categories_array) && is_array($event->categories_array) ? $event->categories_array : [], $configuration),
+                'archive'       => $event->dtend !== '' ? $iCalService->iCalDateToUnixTimestamp($event->dtend) + 86400 : '',
+                'categories'    => $this->getCategories((array) ($event->categories_array ?? []), $configuration),
                 '_dynamicData'  => [
                     'location'          => $event->location ?? '',
-                    'datetime_end'      => isset($event->dtend) ? $iCalService->iCalDateToUnixTimestamp($event->dtend) : '',
+                    'datetime_end'      => $event->dtend !== '' ? $iCalService->iCalDateToUnixTimestamp($event->dtend) : '',
                     'reference'         => $event,
                     'news_importicsxml' => [
-                        'importDate' => date('d.m.Y h:i:s', $this->context->getPropertyFromAspect('date', 'timestamp')),
+                        'importDate' => date('d.m.Y h:i:s', $crdate),
                         'feed'       => $configuration->getPath(),
                         'UID'        => $event->uid,
                         'VARIANT'    => $idCount[$id],
@@ -125,20 +127,24 @@ class IcsMapper extends AbstractMapper
     }
 
     /**
-     * @param array             $categoryTitles
+     * @param array<mixed>      $categoryTitles
      * @param TaskConfiguration $configuration
      *
-     * @return array
+     * @return string[]
      */
     protected function getCategories(array $categoryTitles, TaskConfiguration $configuration): array
     {
         $categoryIds = [];
 
-        if (!empty($categoryTitles)) {
-            if ($configuration->getMapping()) {
+        if ($categoryTitles !== []) {
+            if ($configuration->getMapping() !== '') {
                 $categoryMapping = $configuration->getMappingConfigured();
 
                 foreach ($categoryTitles as $rawTitle) {
+                    if (!is_string($rawTitle)) {
+                        continue;
+                    }
+
                     $splitTitle = GeneralUtility::trimExplode(
                         ',',
                         $rawTitle,
@@ -240,7 +246,7 @@ class IcsMapper extends AbstractMapper
     {
         $response = GeneralUtility::getUrl($url);
 
-        if (empty($response)) {
+        if (($response === false) || ($response === '')) {
             $message = sprintf(
                 'URL "%s" returned an empty content!',
                 $url

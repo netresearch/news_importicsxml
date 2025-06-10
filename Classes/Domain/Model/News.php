@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace GeorgRinger\NewsImporticsxml\Domain\Model;
 
 /**
- * Class News
+ * Class News.
  */
 class News extends \GeorgRinger\News\Domain\Model\News
 {

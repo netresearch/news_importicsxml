@@ -18,7 +18,7 @@ use TYPO3\CMS\Core\Utility\DebugUtility;
 use function is_array;
 
 /**
- * Class JsonElement
+ * Class JsonElement.
  */
 class JsonElement extends AbstractNode
 {
@@ -37,7 +37,7 @@ class JsonElement extends AbstractNode
 
         if ($json !== '') {
             $data = json_decode(
-                $json,
+                (string) $json,
                 true,
                 512,
                 JSON_THROW_ON_ERROR

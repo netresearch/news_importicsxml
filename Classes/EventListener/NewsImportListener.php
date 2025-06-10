@@ -12,9 +12,9 @@ declare(strict_types=1);
 namespace GeorgRinger\NewsImporticsxml\EventListener;
 
 use GeorgRinger\News\Event\NewsImportPostHydrateEvent;
+use GeorgRinger\NewsImporticsxml\Domain\Model\News;
 use JsonException;
 
-use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 use function is_array;
 
 /**
@@ -33,16 +33,17 @@ class NewsImportListener
             isset($importData['_dynamicData']['news_importicsxml'])
             && is_array($importData['_dynamicData']['news_importicsxml'])
         ) {
-DebuggerUtility::var_dump($event);
-exit;
-            $event
-                ->getNews()
-                ->setNewsImportData(
+            $news = $event->getNews();
+
+            if (property_exists($news, 'newsImportData')) {
+                /** @var News $news */
+                $news->setNewsImportData(
                     json_encode(
                         $importData['_dynamicData']['news_importicsxml'],
                         JSON_THROW_ON_ERROR
                     )
                 );
+            }
         }
     }
 }

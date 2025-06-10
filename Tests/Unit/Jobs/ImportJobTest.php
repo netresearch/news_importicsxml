@@ -11,34 +11,38 @@ declare(strict_types=1);
 
 namespace GeorgRinger\NewsImporticsxml\Tests\Unit\Jobs;
 
+use GeorgRinger\News\Domain\Service\NewsImportService;
 use GeorgRinger\NewsImporticsxml\Domain\Model\Dto\TaskConfiguration;
 use GeorgRinger\NewsImporticsxml\Jobs\ImportJob;
 use GeorgRinger\NewsImporticsxml\Mapper\IcsMapper;
 use GeorgRinger\NewsImporticsxml\Mapper\XmlMapper;
+use Override;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\NullLogger;
-use TYPO3\TestingFramework\Core\AccessibleObjectInterface;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use UnexpectedValueException;
 
 class ImportJobTest extends UnitTestCase
 {
     /**
-     * @var ImportJob
+     * @var MockObject
      */
-    protected ImportJob $mockedJob;
+    protected MockObject $mockedJob;
 
-    public function setUp(): void
+    #[Override]
+    protected function setUp(): void
     {
         parent::setUp();
 
         $this->mockedJob = $this->getAccessibleMock(
             ImportJob::class,
             ['import'],
-            [],
-            '',
-            false
+            [
+                $this->createMock(XmlMapper::class),
+                $this->createMock(IcsMapper::class),
+                $this->createMock(NewsImportService::class),
+            ],
         );
 
         $this->mockedJob->_set(

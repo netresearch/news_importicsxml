@@ -14,14 +14,14 @@ namespace GeorgRinger\NewsImporticsxml\Mapper;
 use GeorgRinger\NewsImporticsxml\Domain\Model\Dto\TaskConfiguration;
 
 /**
- * Interface MapperInterface
+ * Interface MapperInterface.
  */
 interface MapperInterface
 {
     /**
      * @param TaskConfiguration $configuration
      *
-     * @return array
+     * @return list<array<string, int|string|bool|array<string, mixed>>>
      */
     public function map(TaskConfiguration $configuration): array;
 

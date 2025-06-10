@@ -25,10 +25,8 @@ use TYPO3\CMS\Core\Context\Exception\AspectNotFoundException;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-use function chr;
-
 /**
- * Class ImportCommand
+ * Class ImportCommand.
  */
 class ImportCommand extends Command implements LoggerAwareInterface
 {
@@ -97,6 +95,7 @@ class ImportCommand extends Command implements LoggerAwareInterface
      * @param OutputInterface $output
      *
      * @return int
+     *
      * @throws AspectNotFoundException
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -128,19 +127,8 @@ class ImportCommand extends Command implements LoggerAwareInterface
             ->setCleanBeforeImport($input->getOption('cleanBeforeImport'))
             ->setPersistAsExternalUrl($input->getOption('persistAsExternalUrl'))
             ->setEmail($input->getOption('email'))
-            ->setSetSlug($input->getOption('slug'));
-
-        $mapping = $input->getOption('mapping');
-
-        if ($mapping !== '') {
-            $mapping = str_replace(
-                '|',
-                chr(10),
-                $mapping
-            );
-
-            $configuration->setMapping($mapping);
-        }
+            ->setSetSlug($input->getOption('slug'))
+            ->setMapping($input->getOption('mapping'));
 
         return $configuration;
     }

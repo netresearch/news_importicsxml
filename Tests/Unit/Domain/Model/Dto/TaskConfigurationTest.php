@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace GeorgRinger\NewsImporticsxml\Tests\Unit\Domain\Model\Dto;
 
 use GeorgRinger\NewsImporticsxml\Domain\Model\Dto\TaskConfiguration;
+use Override;
 use PHPUnit\Framework\Attributes\Test;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
@@ -25,6 +26,7 @@ class TaskConfigurationTest extends UnitTestCase
     /**
      * Setup.
      */
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

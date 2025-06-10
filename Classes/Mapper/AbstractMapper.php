@@ -22,7 +22,7 @@ use TYPO3\CMS\Core\DataHandling\SlugHelper;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
- * Class AbstractMapper
+ * Class AbstractMapper.
  */
 abstract class AbstractMapper implements MapperInterface, LoggerAwareInterface
 {
@@ -58,7 +58,7 @@ abstract class AbstractMapper implements MapperInterface, LoggerAwareInterface
         ConnectionPool $connectionPool,
         ExtensionConfiguration $extensionConfiguration,
     ) {
-        $this->context = $context;
+        $this->context        = $context;
         $this->connectionPool = $connectionPool;
 
         $fieldConfig = $GLOBALS['TCA']['tx_news_domain_model_news']['columns']['path_segment']['config'];
