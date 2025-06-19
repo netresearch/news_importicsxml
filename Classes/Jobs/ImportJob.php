@@ -1,115 +1,159 @@
 <?php
 
-namespace GeorgRinger\NewsImporticsxml\Jobs;
-
-use TYPO3\CMS\Extbase\Object\ObjectManagerInterface;
-use GeorgRinger\NewsImporticsxml\Mapper\XmlMapper;
-use GeorgRinger\NewsImporticsxml\Mapper\IcsMapper;
-use GeorgRinger\News\Domain\Service\NewsImportService;
 /**
- * This file is part of the "news_importicsxml" Extension for TYPO3 CMS.
+ * This file is part of the package georgringer/news-importicsxml.
  *
  * For the full copyright and license information, please read the
- * LICENSE.txt file that was distributed with this source code.
+ * LICENSE file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
+namespace GeorgRinger\NewsImporticsxml\Jobs;
+
+use GeorgRinger\News\Domain\Service\NewsImportService;
 use GeorgRinger\NewsImporticsxml\Domain\Model\Dto\TaskConfiguration;
-use TYPO3\CMS\Core\Log\Logger;
-use TYPO3\CMS\Core\Log\LogManager;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
+use GeorgRinger\NewsImporticsxml\Mapper\IcsMapper;
+use GeorgRinger\NewsImporticsxml\Mapper\XmlMapper;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerInterface;
+use TYPO3\CMS\Core\Context\Exception\AspectNotFoundException;
 use UnexpectedValueException;
 
+use function count;
+use function sprintf;
+
 /**
- * Base import handling
+ * Base import handling.
  */
-class ImportJob
+class ImportJob implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
 
     /**
      * @var TaskConfiguration
      */
-    protected $configuration;
+    protected TaskConfiguration $configuration;
 
     /**
-     * @var Logger
+     * @var XmlMapper
      */
-    protected $logger;
+    protected XmlMapper $xmlMapper;
 
     /**
-     * @var \GeorgRinger\NewsImporticsxml\Mapper\XmlMapper
+     * @var IcsMapper
      */
-    protected $xmlMapper;
+    protected IcsMapper $icsMapper;
 
     /**
-     * @var \GeorgRinger\NewsImporticsxml\Mapper\IcsMapper
+     * @var NewsImportService
      */
-    protected $icsMapper;
-
-    /**
-     * @var \GeorgRinger\News\Domain\Service\NewsImportService
-     */
-    protected $newsImportService;
+    protected NewsImportService $newsImportService;
 
     /**
      * ImportJob constructor.
-     * @param TaskConfiguration $configuration
-     * @param XmlMapper $xmlMapper
-     * @param IcsMapper $icsMapper
+     *
+     * @param XmlMapper         $xmlMapper
+     * @param IcsMapper         $icsMapper
      * @param NewsImportService $newsImportService
      */
     public function __construct(
         XmlMapper $xmlMapper,
         IcsMapper $icsMapper,
-        NewsImportService $newsImportService
+        NewsImportService $newsImportService,
     ) {
-        $this->logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
-        $this->xmlMapper = $xmlMapper;
-        $this->icsMapper = $icsMapper;
+        $this->xmlMapper         = $xmlMapper;
+        $this->icsMapper         = $icsMapper;
         $this->newsImportService = $newsImportService;
     }
 
     /**
      * @param TaskConfiguration $configuration
+     *
+     * @return ImportJob
      */
-    public function setConfiguration(TaskConfiguration $configuration): void
+    public function setConfiguration(TaskConfiguration $configuration): ImportJob
     {
         $this->configuration = $configuration;
+
+        return $this;
     }
 
     /**
-     * Import remote content
+     * Import remote content.
+     *
+     * @throws AspectNotFoundException
      */
-    public function run()
+    public function run(): void
     {
-        $this->logger->info(sprintf(
-            'Starting import of "%s" (%s), reporting to "%s"',
-            $this->configuration->getPath(),
-            strtoupper($this->configuration->getFormat()),
-            $this->configuration->getEmail()));
+        $this->logInfo(
+            sprintf(
+                'Starting import of "%s" (%s), reporting to "%s"',
+                $this->configuration->getPath(),
+                strtoupper($this->configuration->getFormat()),
+                $this->configuration->getEmail()
+            )
+        );
 
         switch (strtolower($this->configuration->getFormat())) {
             case 'xml':
                 $data = $this->xmlMapper->map($this->configuration);
                 break;
+
             case 'ics':
                 $data = $this->icsMapper->map($this->configuration);
                 break;
+
             default:
-                $message = sprintf('Format "%s" is not supported!', $this->configuration->getFormat());
-                $this->logger->critical($message);
-                throw new UnexpectedValueException($message, 1527601575);
+                $message = sprintf(
+                    'Format "%s" is not supported!',
+                    $this->configuration->getFormat()
+                );
+
+                $this->logCritical($message);
+
+                throw new UnexpectedValueException(
+                    $message,
+                    1527601575
+                );
         }
 
         $this->import($data);
     }
 
     /**
-     * @param array|null $data
+     * @param list<array<string, int|string|bool|array<string, mixed>>> $data
      */
-    protected function import(array $data = null)
+    private function import(array $data): void
     {
-        $this->logger->info(sprintf('Starting import of %s records', count($data)));
+        $this->logInfo(
+            sprintf(
+                'Starting import of %s records',
+                count($data)
+            )
+        );
+
         $this->newsImportService->import($data);
     }
 
+    /**
+     * @param string $message
+     */
+    private function logInfo(string $message): void
+    {
+        if ($this->logger instanceof LoggerInterface) {
+            $this->logger->info($message);
+        }
+    }
+
+    /**
+     * @param string $message
+     */
+    private function logCritical(string $message): void
+    {
+        if ($this->logger instanceof LoggerInterface) {
+            $this->logger->critical($message);
+        }
+    }
 }

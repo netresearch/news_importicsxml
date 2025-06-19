@@ -1,19 +1,23 @@
 services:
-  _defaults:
-    autowire: true
-    autoconfigure: true
-    public: false
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
 
-  GeorgRinger\NewsImporticsxml\:
-    resource: '../Classes/*'
+    GeorgRinger\NewsImporticsxml\:
+        resource: '../Classes/*'
+        exclude: '../Classes/Domain/Model/*'
 
-  GeorgRinger\NewsImporticsxml\Command\ImportCommand:
-    tags:
-      - name: 'console.command'
-        command: 'news:importicsxml'
+    GeorgRinger\NewsImporticsxml\Command\ImportCommand:
+        tags:
+            -   name: 'console.command'
+                command: 'news:importicsxml'
 
-  GeorgRinger\NewsImporticsxml\EventListener\NewsImportListener:
-    tags:
-      - name: event.listener
-        identifier: 'newsimporticsxml-newsimportlistener'
-        event: GeorgRinger\News\Event\NewsImportPostHydrateEvent
+    GeorgRinger\NewsImporticsxml\Jobs\ImportJob:
+        public: true
+
+    GeorgRinger\NewsImporticsxml\EventListener\NewsImportListener:
+        tags:
+            -   name: event.listener
+                identifier: 'newsimporticsxml-newsimportlistener'
+                event: GeorgRinger\News\Event\NewsImportPostHydrateEvent

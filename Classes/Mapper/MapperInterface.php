@@ -1,28 +1,32 @@
 <?php
+
+/**
+ * This file is part of the package georgringer/news-importicsxml.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE file that was distributed with this source code.
+ */
+
 declare(strict_types=1);
 
 namespace GeorgRinger\NewsImporticsxml\Mapper;
 
-/**
- * This file is part of the "news_importicsxml" Extension for TYPO3 CMS.
- *
- * For the full copyright and license information, please read the
- * LICENSE.txt file that was distributed with this source code.
- */
-
 use GeorgRinger\NewsImporticsxml\Domain\Model\Dto\TaskConfiguration;
 
+/**
+ * Interface MapperInterface.
+ */
 interface MapperInterface
 {
-
     /**
      * @param TaskConfiguration $configuration
-     * @return array
+     *
+     * @return list<array<string, int|string|bool|array<string, mixed>>>
      */
-    public function map(TaskConfiguration $configuration);
+    public function map(TaskConfiguration $configuration): array;
 
     /**
-     * Get the import source identifier
+     * Get the import source identifier.
      *
      * @return string
      */

@@ -5,8 +5,8 @@ The import is done by the scheduler.
 
 **Requirements**
 
-- TYPO3 CMS 10.4 LTS or 11.5 LTS
-- EXT:news 8.0.0+
+- TYPO3 CMS 13.4 LTS
+- EXT:news 12.3.0+
 
 **Sponsors**
 
@@ -147,7 +147,7 @@ Most likely, you will need the NewsImportPostHydrateEvent EventListener.
 
 .. tip::
 
-   Check the documentation of the news extension for a full list of available events: `https://docs.typo3.org/p/georgringer/news/main/en-us/Reference/Events/Index.html` 
+   Check the documentation of the news extension for a full list of available events: `https://docs.typo3.org/p/georgringer/news/main/en-us/Reference/Events/Index.html`
 
 .. tip::
 
@@ -155,7 +155,7 @@ Most likely, you will need the NewsImportPostHydrateEvent EventListener.
 
 .. tip::
 
-   An example on how to use the NewsImportPostHydrateEvent EventListener is available in `ext:eventnews` 
+   An example on how to use the NewsImportPostHydrateEvent EventListener is available in `ext:eventnews`
 
 
 

@@ -1,134 +1,171 @@
 <?php
+
+/**
+ * This file is part of the package georgringer/news-importicsxml.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE file that was distributed with this source code.
+ */
+
 declare(strict_types=1);
 
 namespace GeorgRinger\NewsImporticsxml\Mapper;
 
 use GeorgRinger\NewsImporticsxml\Domain\Model\Dto\TaskConfiguration;
+use ICal\Event;
 use ICal\ICal;
 use RuntimeException;
+use TYPO3\CMS\Core\Context\Exception\AspectNotFoundException;
 use TYPO3\CMS\Core\Core\Environment;
-use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-/**
- * This file is part of the "news_importicsxml" Extension for TYPO3 CMS.
- *
- * For the full copyright and license information, please read the
- * LICENSE.txt file that was distributed with this source code.
- */
-class IcsMapper extends AbstractMapper implements MapperInterface
-{
+use function chr;
+use function is_string;
+use function sprintf;
+use function strlen;
 
-    /** @var bool */
-    protected $pathIsModified = false;
+/**
+ * Class IcsMapper.
+ */
+class IcsMapper extends AbstractMapper
+{
+    /**
+     * @var bool
+     */
+    protected bool $pathIsModified = false;
 
     /**
      * @param TaskConfiguration $configuration
-     * @return array
+     *
+     * @return list<array<string, int|string|bool|array<string, mixed>>>
+     *
+     * @throws AspectNotFoundException
      */
-    public function map(TaskConfiguration $configuration)
+    public function map(TaskConfiguration $configuration): array
     {
-        if ($configuration->getCleanBeforeImport()) {
-            $this->removeImportedRecordsFromPid($configuration->getPid(), $this->getImportSource());
+        if ($configuration->isCleanBeforeImport()) {
+            $this->removeImportedRecordsFromPid(
+                $configuration->getPid(),
+                $this->getImportSource()
+            );
         }
 
         $data = [];
         $path = $this->getFileContent($configuration);
 
-        $idCount = [];
-
-        require_once(ExtensionManagementUtility::extPath('news_importicsxml') . 'Resources/Private/Contrib/ICal.php');
-	require_once(ExtensionManagementUtility::extPath('news_importicsxml') . 'Resources/Private/Contrib/Event.php');
+        $idCount     = [];
         $iCalService = new ICal($path);
+
+        /** @var Event[] $events */
         $events = $iCalService->events();
 
         foreach ($events as $event) {
-            $id = strlen($event->uid) < 90 ? $event->uid : md5($event>uid);
-            if (!isset($idCount[$id])) {
-                $idCount[$id] = 1;
+            $id = strlen($event->uid) < 90 ? $event->uid : md5($event->uid);
+
+            if (isset($idCount[$id])) {
+                ++$idCount[$id];
             } else {
-                $idCount[$id]++;
+                $idCount[$id] = 1;
             }
-            $datetime = $iCalService->iCalDateToUnixTimestamp($event->dtstart ?? $event->dtstamp);
-            if ($datetime === false) {
+
+            $crdate   = (int) $this->context->getPropertyFromAspect('date', 'timestamp');
+            $datetime = $iCalService->iCalDateToUnixTimestamp($event->dtstart);
+
+            if ($datetime === 0) {
                 $datetime = $iCalService->iCalDateToUnixTimestamp($event->dtstamp);
             }
 
             $singleItem = [
                 'import_source' => $this->getImportSource(),
-                'import_id' => $id . '-' . $idCount[$id],
-                'crdate' => $GLOBALS['EXEC_TIME'],
-                'cruser_id' => $GLOBALS['BE_USER'] ?? $GLOBALS['BE_USER']->user['uid'] ?? 0,
-                'type' => 0,
-                'hidden' => 0,
-                'pid' => $configuration->getPid(),
-                'title' => $this->cleanup((string)$event->summary),
-                'bodytext' => $this->cleanup((string)$event->description),
-                'datetime' => $datetime,
-                'archive' =>  (isset($event->dtend) ? $iCalService->iCalDateToUnixTimestamp($event->dtend)+86400 : ''),
-                'categories' => $this->getCategories((array)($event->categories_array ?? []), $configuration),
-                '_dynamicData' => [
-                    'location' => (isset($event->location) ? $event->location : ''),
-                    'datetime_end' => (isset($event->dtend) ? $iCalService->iCalDateToUnixTimestamp($event->dtend) : ''),
-                    'reference' => $event,
+                'import_id'     => $id . '-' . $idCount[$id],
+                'crdate'        => $crdate,
+                'cruser_id'     => $GLOBALS['BE_USER'] ?? $GLOBALS['BE_USER']->user['uid'] ?? 0,
+                'type'          => 0,
+                'hidden'        => 0,
+                'pid'           => $configuration->getPid(),
+                'title'         => $this->cleanup($event->summary),
+                'bodytext'      => $this->cleanup($event->description ?? ''),
+                'datetime'      => $datetime,
+                'archive'       => $event->dtend !== '' ? $iCalService->iCalDateToUnixTimestamp($event->dtend) + 86400 : '',
+                'categories'    => $this->getCategories((array) ($event->categories_array ?? []), $configuration),
+                '_dynamicData'  => [
+                    'location'          => $event->location ?? '',
+                    'datetime_end'      => $event->dtend !== '' ? $iCalService->iCalDateToUnixTimestamp($event->dtend) : '',
+                    'reference'         => $event,
                     'news_importicsxml' => [
-                        'importDate' => date('d.m.Y h:i:s', $GLOBALS['EXEC_TIME']),
-                        'feed' => $configuration->getPath(),
-                        'UID' => $event->uid,
-                        'VARIANT' => $idCount[$id],
-                        'LOCATION' => (isset($event->location) ? $event->location : ''),
-                        'DTSTART' => $event->dtstart ?? '',
-                        'DTSTAMP' => $event->dtstamp ?? '',
-                        'DTEND' => $event->dtend ?? '',
-                        'PRIORITY' => $event->priority ?? '',
-                        'SEQUENCE' => $event->sequence,
-                        'STATUS' => $event->status ?? '',
-                        'TRANSP' => $event->transp ?? '',
-                        'URL' => $event->url ?? '',
-                        'ATTACH' => $event->attach ?? '',
-                        'SUMMARY' => $event->summary ?? '',
-                    ]
+                        'importDate' => date('d.m.Y h:i:s', $crdate),
+                        'feed'       => $configuration->getPath(),
+                        'UID'        => $event->uid,
+                        'VARIANT'    => $idCount[$id],
+                        'LOCATION'   => $event->location ?? '',
+                        'DTSTART'    => $event->dtstart ?? '',
+                        'DTSTAMP'    => $event->dtstamp ?? '',
+                        'DTEND'      => $event->dtend ?? '',
+                        'PRIORITY'   => $event->priority ?? '',
+                        'SEQUENCE'   => $event->sequence,
+                        'STATUS'     => $event->status ?? '',
+                        'TRANSP'     => $event->transp ?? '',
+                        'URL'        => $event->url ?? '',
+                        'ATTACH'     => $event->attach ?? '',
+                        'SUMMARY'    => $event->summary ?? '',
+                    ],
                 ],
             ];
 
             if ($configuration->isSetSlug()) {
                 $singleItem['generate_path_segment'] = true;
             }
+
             $data[] = $singleItem;
         }
 
         if ($this->pathIsModified) {
-            $success = unlink($path);
+            unlink($path);
         }
 
         return $data;
     }
 
     /**
-     * @param array $categoryTitles
+     * @param array<mixed>      $categoryTitles
      * @param TaskConfiguration $configuration
-     * @return array
+     *
+     * @return string[]
      */
     protected function getCategories(array $categoryTitles, TaskConfiguration $configuration): array
     {
         $categoryIds = [];
-        if (!empty($categoryTitles)) {
-            if (!$configuration->getMapping()) {
-                $this->logger->info('Categories found during import but no mapping assigned in the task!');
-            } else {
+
+        if ($categoryTitles !== []) {
+            if ($configuration->getMapping() !== '') {
                 $categoryMapping = $configuration->getMappingConfigured();
 
                 foreach ($categoryTitles as $rawTitle) {
-                    $splitTitle = GeneralUtility::trimExplode(',', $rawTitle, true, 0);
+                    if (!is_string($rawTitle)) {
+                        continue;
+                    }
+
+                    $splitTitle = GeneralUtility::trimExplode(
+                        ',',
+                        $rawTitle,
+                        true
+                    );
 
                     foreach ($splitTitle as $title) {
-                        if (!isset($categoryMapping[$title])) {
-                            $this->logger->warning(sprintf('Category mapping is missing for category "%s"', $title));
-                        } else {
+                        if (isset($categoryMapping[$title])) {
                             $categoryIds[] = $categoryMapping[$title];
+                        } else {
+                            $this->logWarning(
+                                sprintf(
+                                    'Category mapping is missing for category "%s"',
+                                    $title
+                                )
+                            );
                         }
                     }
                 }
+            } else {
+                $this->logInfo('Categories found during import but no mapping assigned in the task!');
             }
         }
 
@@ -137,49 +174,89 @@ class IcsMapper extends AbstractMapper implements MapperInterface
 
     /**
      * @param string $content
+     *
      * @return string
      */
     protected function cleanup(string $content): string
     {
-        $search = ['\\,', '\\n'];
-        $replace = [',', chr(10)];
-
-        return str_replace($search, $replace, $content);
+        return str_replace(
+            [
+                '\\,',
+                '\\n',
+            ],
+            [
+                ',',
+                chr(10),
+            ],
+            $content
+        );
     }
 
     /**
      * @param TaskConfiguration $configuration
+     *
      * @return string
+     *
+     * @throws AspectNotFoundException
      */
-    protected function getFileContent(TaskConfiguration $configuration)
+    protected function getFileContent(TaskConfiguration $configuration): string
     {
         $path = $configuration->getPath();
-        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+
+        if (
+            str_starts_with($path, 'http://')
+            || str_starts_with($path, 'https://')
+        ) {
             $content = $this->getContentOfFile($path);
 
-            $temporaryCopyPath = Environment::getPublicPath() . '/typo3temp/' . md5($path . $GLOBALS['EXEC_TIME']);
-            GeneralUtility::writeFileToTypo3tempDir($temporaryCopyPath, $content);
+            $temporaryCopyPath = Environment::getPublicPath() . '/typo3temp/' . md5(
+                $path . $this->context->getPropertyFromAspect('date', 'timestamp')
+            );
+
+            GeneralUtility::writeFileToTypo3tempDir(
+                $temporaryCopyPath,
+                $content
+            );
+
             $this->pathIsModified = true;
         } else {
             $temporaryCopyPath = Environment::getPublicPath() . '/' . $configuration->getPath();
         }
 
         if (!is_file($temporaryCopyPath)) {
-            throw new RuntimeException(sprintf('The path "%s" does not contain a valid file', $temporaryCopyPath));
+            throw new RuntimeException(
+                sprintf(
+                    'The path "%s" does not contain a valid file',
+                    $temporaryCopyPath
+                )
+            );
         }
 
         return $temporaryCopyPath;
     }
 
-    protected function getContentOfFile($url)
+    /**
+     * @param string $url
+     *
+     * @return string
+     *
+     * @throws RuntimeException
+     */
+    protected function getContentOfFile(string $url): string
     {
         $response = GeneralUtility::getUrl($url);
 
-        if (empty($response)) {
-            $message = sprintf('URL "%s" returned an empty content!', $url);
-            $this->logger->alert($message);
+        if (($response === false) || ($response === '')) {
+            $message = sprintf(
+                'URL "%s" returned an empty content!',
+                $url
+            );
+
+            $this->logAlert($message);
+
             throw new RuntimeException($message);
         }
+
         return $response;
     }
 

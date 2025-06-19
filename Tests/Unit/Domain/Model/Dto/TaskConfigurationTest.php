@@ -1,85 +1,81 @@
 <?php
-namespace GeorgRinger\NewsImporticsxml\Tests\Unit\Domain\Model\Dto;
 
-/*
- * This file is part of the TYPO3 CMS project.
- *
- * It is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License, either version 2
- * of the License, or any later version.
+/**
+ * This file is part of the package georgringer/news-importicsxml.
  *
  * For the full copyright and license information, please read the
- * LICENSE.txt file that was distributed with this source code.
- *
- * The TYPO3 project - inspiring people to share!
+ * LICENSE file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
+namespace GeorgRinger\NewsImporticsxml\Tests\Unit\Domain\Model\Dto;
+
 use GeorgRinger\NewsImporticsxml\Domain\Model\Dto\TaskConfiguration;
-use TYPO3\CMS\Core\Tests\UnitTestCase;
+use Override;
+use PHPUnit\Framework\Attributes\Test;
+use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 class TaskConfigurationTest extends UnitTestCase
 {
-
     /**
      * @var TaskConfiguration
      */
-    protected $instance;
+    protected TaskConfiguration $instance;
 
     /**
-     * Setup
+     * Setup.
      */
-    protected function setUp()
+    #[Override]
+    protected function setUp(): void
     {
+        parent::setUp();
+
         $this->instance = new TaskConfiguration();
     }
 
-    /**
-     * @test
-     */
-    public function emailCanBeSet()
+    #[Test]
+    public function emailCanBeSet(): void
     {
         $value = 'fo@bar.com';
         $this->instance->setEmail($value);
-        $this->assertEquals($value, $this->instance->getEmail());
+
+        self::assertEquals($value, $this->instance->getEmail());
     }
 
-    /**
-     * @test
-     */
-    public function pathCanBeSet()
+    #[Test]
+    public function pathCanBeSet(): void
     {
         $value = 'fileadmin/123.xml';
         $this->instance->setPath($value);
-        $this->assertEquals($value, $this->instance->getPath());
+
+        self::assertEquals($value, $this->instance->getPath());
     }
 
-    /**
-     * @test
-     */
-    public function formatCanBeSet()
+    #[Test]
+    public function formatCanBeSet(): void
     {
         $value = 'xml';
         $this->instance->setFormat($value);
-        $this->assertEquals($value, $this->instance->getFormat());
+
+        self::assertEquals($value, $this->instance->getFormat());
     }
 
-    /**
-     * @test
-     */
-    public function pidCanBeSet()
+    #[Test]
+    public function pidCanBeSet(): void
     {
-        $value = '456';
+        $value = 456;
         $this->instance->setPid($value);
-        $this->assertEquals($value, $this->instance->getPid());
+
+        self::assertEquals($value, $this->instance->getPid());
     }
 
-    /**
-     * @test
-     */
-    public function mappingCanBeSet()
+    #[Test]
+    public function mappingCanBeSet(): void
     {
         $value = 'fo:bar';
         $this->instance->setMapping($value);
-        $this->assertEquals($value, $this->instance->getMapping());
+
+        self::assertEquals($value, $this->instance->getMapping());
     }
 }
