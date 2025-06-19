@@ -1,2 +1,79 @@
 parameters:
-	ignoreErrors: []
+	ignoreErrors:
+		-
+			message: '#^Access to an undefined property ICal\\Event\:\:\$attach\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../Classes/Mapper/IcsMapper.php
+
+		-
+			message: '#^Access to an undefined property ICal\\Event\:\:\$categories_array\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../Classes/Mapper/IcsMapper.php
+
+		-
+			message: '#^Access to an undefined property ICal\\Event\:\:\$priority\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../Classes/Mapper/IcsMapper.php
+
+		-
+			message: '#^Access to an undefined property ICal\\Event\:\:\$url\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../Classes/Mapper/IcsMapper.php
+
+		-
+			message: '#^Property ICal\\Event\:\:\$dtend \(string\) on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.property
+			count: 1
+			path: ../Classes/Mapper/IcsMapper.php
+
+		-
+			message: '#^Property ICal\\Event\:\:\$dtstamp \(string\) on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.property
+			count: 1
+			path: ../Classes/Mapper/IcsMapper.php
+
+		-
+			message: '#^Property ICal\\Event\:\:\$dtstart \(string\) on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.property
+			count: 1
+			path: ../Classes/Mapper/IcsMapper.php
+
+		-
+			message: '#^Property ICal\\Event\:\:\$status \(string\) on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.property
+			count: 1
+			path: ../Classes/Mapper/IcsMapper.php
+
+		-
+			message: '#^Property ICal\\Event\:\:\$summary \(string\) on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.property
+			count: 1
+			path: ../Classes/Mapper/IcsMapper.php
+
+		-
+			message: '#^Property ICal\\Event\:\:\$transp \(string\) on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.property
+			count: 1
+			path: ../Classes/Mapper/IcsMapper.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 2
+			path: ../Classes/Mapper/XmlMapper.php
+
+		-
+			message: '#^Call to an undefined method PHPUnit\\Framework\\MockObject\\MockObject\:\:_set\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: ../Tests/Unit/Jobs/ImportJobTest.php
+
+		-
+			message: '#^Call to an undefined method PHPUnit\\Framework\\MockObject\\MockObject\:\:setConfiguration\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: ../Tests/Unit/Jobs/ImportJobTest.php

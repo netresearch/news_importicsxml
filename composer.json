@@ -37,6 +37,7 @@
         "discard-changes": true,
         "sort-packages": true,
         "optimize-autoloader": true,
+        "platform-check": false,
         "allow-plugins": {
             "a9f/fractor-extension-installer": true,
             "typo3/class-alias-loader": true,

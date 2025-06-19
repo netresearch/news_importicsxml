@@ -13,7 +13,8 @@ namespace GeorgRinger\NewsImporticsxml\Mapper;
 
 use GeorgRinger\NewsImporticsxml\Domain\Model\Dto\TaskConfiguration;
 use Laminas\Feed\Reader\Collection\Category;
-use Laminas\Feed\Reader\Entry\EntryInterface;
+use Laminas\Feed\Reader\Entry\Atom;
+use Laminas\Feed\Reader\Entry\Rss;
 use Laminas\Feed\Reader\Reader;
 use TYPO3\CMS\Core\Context\Exception\AspectNotFoundException;
 use TYPO3\CMS\Core\Core\Environment;
@@ -49,7 +50,7 @@ class XmlMapper extends AbstractMapper
         $feed   = Reader::import($configuration->getPath());
         $crdate = (int) $this->context->getPropertyFromAspect('date', 'timestamp');
 
-        /** @var EntryInterface $item */
+        /** @var Atom|Rss $item */
         foreach ($feed as $item) {
             $id = strlen($item->getId()) > 100 ? md5($item->getId()) : $item->getId();
 
