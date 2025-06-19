@@ -65,7 +65,7 @@ jobs:
                 name: CGL
                 if: ${{ always() && steps.install.conclusion == 'success' }}
                 run: |
-                    php-cs-fixer fix --dry-run --verbose --config Build/.php-cs-fixer.dist.php
+                    PHP_CS_FIXER_IGNORE_ENV=1 php-cs-fixer fix --dry-run --verbose --config Build/.php-cs-fixer.dist.php
 
             -   id: phpstan
                 name: PHPStan
