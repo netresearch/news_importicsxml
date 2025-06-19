@@ -80,7 +80,7 @@
             "web-dir": ".build/public"
         },
         "branch-alias": {
-            "dev-master": "3.0.x-dev"
+            "dev-master": "7.0.x-dev"
         }
     },
     "scripts": {
