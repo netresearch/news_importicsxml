@@ -1,3 +1,16 @@
+.. |version| image:: https://img.shields.io/github/v/release/netresearch/news_importicsxml
+   :target: https://github.com/netresearch/news_importicsxml/releases/latest
+   :alt: Latest version
+.. |license| image:: https://img.shields.io/github/license/netresearch/news_importicsxml
+   :target: https://github.com/netresearch/news_importicsxml/blob/main/LICENSE.md
+   :alt: License
+.. |ci| image:: https://github.com/netresearch/news_importicsxml/actions/workflows/ci.yml/badge.svg
+   :target: https://github.com/netresearch/news_importicsxml/actions/workflows/ci.yml
+   :alt: CI
+
+|version| |license| |ci|
+
+
 TYPO3 CMS Extension "news_importicsxml"
 =======================================
 This extensions provides an import interface for `xml` and `ics` files which can either be located on the same server or reached via URL.
