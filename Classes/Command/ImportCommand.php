@@ -59,7 +59,7 @@ class ImportCommand extends Command implements LoggerAwareInterface
                 'slug',
                 's',
                 InputOption::VALUE_NONE,
-                $this->getLabel('slug')
+                $this->getLabel('setSlug')
             )
             ->addOption(
                 'cleanBeforeImport',
