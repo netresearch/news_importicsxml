@@ -46,7 +46,7 @@ Vulnerabilities are reported privately as described in the [security policy of t
 ## What users can expect
 
 - **Only privileged users start an import.** The extension has no frontend plugin, no route, no AJAX endpoint and no backend module of its own (`Configuration/Services.yaml`, `ext_localconf.php`). An import runs only as the console command, so it needs shell access or the administrator-only scheduler module.
-- **Imported data goes through TYPO3 and EXT:news APIs.** News records are written by `NewsImportService` through Extbase persistence; the only direct database write of this extension, the removal of earlier imported records, uses Doctrine DBAL's `Connection::delete()` with an array of criteria that DBAL binds as parameters (`Classes/Mapper/AbstractMapper.php`).
+- **Imported data goes through TYPO3 and EXT:news APIs.** News records are written by `NewsImportService` through Extbase persistence; the only direct database write of this extension, the removal of earlier imported records, uses Doctrine DBAL's `Connection::delete()` with an array of criteria, which DBAL (4.4.5 at the time of writing) turns into `column = ?` placeholders with bound values (`Classes/Mapper/AbstractMapper.php`).
 - **Stored import metadata is shown escaped.** `JsonElement` decodes the JSON with `JSON_THROW_ON_ERROR` and renders it with `DebugUtility::viewArray()`, which uses Extbase's `DebuggerUtility` and escapes values with `htmlspecialchars()`. The field is read-only and marked `exclude`, so editors see it only when their group is granted the field (`Configuration/TCA/Overrides/tx_news_domain_model_news.php`).
 - **XML feeds with a DOCTYPE are rejected.** `laminas/laminas-feed` (2.26.2 at the time of writing) parses the feed without entity substitution and refuses any document that contains a DOCTYPE node before an entry is mapped (`Reader::importString()`), so the feed cannot declare external entities or entity expansions.
 - **Unsupported formats stop the import.** `ImportJob::run()` throws an `UnexpectedValueException` for any format other than `xml` or `ics` (tested in `Tests/Unit/Jobs/ImportJobTest.php`).
@@ -87,7 +87,7 @@ Threats considered: a feed provider or network attacker who injects markup or sc
 | CWE-611 XML external entities, CWE-776 entity expansion (OWASP A05) | The feed is parsed without entity substitution, and documents with a DOCTYPE are rejected by `laminas/laminas-feed`. | `XmlMapper::map()` via `Reader::import()` |
 | CWE-862 Missing authorization (OWASP A01) | No web entry point; the scheduler module is administrator-only. | `Configuration/Services.yaml`, `ext_localconf.php` |
 | CWE-20 Improper input validation | The format is checked against a fixed list before any mapper runs. | `ImportJob::run()` |
-| CWE-1104 Use of unmaintained third-party components (OWASP A06) | Dependencies are declared with version ranges in `composer.json`; Dependabot opens update pull requests daily. | `.github/dependabot.yml` |
+| CWE-1104 Use of unmaintained third-party components (OWASP A06) | Dependencies are declared with version ranges in `composer.json` and no lock file is committed, so every CI run installs the newest versions the ranges allow. Dependabot is configured to check the Composer dependencies daily. | `composer.json`, `.gitignore`, `.github/dependabot.yml` |
 
 ## Keeping this document current
 
