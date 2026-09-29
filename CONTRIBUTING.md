@@ -53,6 +53,18 @@ The unit tests cover the import configuration (`Tests/Unit/Domain/Model/Dto/Task
 
 The workflow `.github/workflows/ci.yml` runs the same checks on every push and every pull request, for PHP 8.3 and 8.4 with TYPO3 13. Each check is its own step, so a red run names the failing check; PHPStan findings are also shown as annotations on the changed lines. PHPUnit lists each failing test with its assertion message and the file and line of the assertion.
 
+## Governance and policies
+
+This repository is Netresearch's fork of [georgringer/news_importicsxml](https://github.com/georgringer/news_importicsxml). The copyright of each contribution stays with its author; the code is licensed under GPL-2.0-or-later (`LICENSE.md`). The fork follows the organisation-wide policies of the `netresearch` GitHub organisation:
+
+- [Governance](https://github.com/netresearch/.github/blob/main/GOVERNANCE.md): who decides whether a change is merged, how disagreements are resolved, and which roles (organisation owner, repository admin, maintainer, contributor) carry which responsibilities.
+- [Roadmap](https://github.com/netresearch/.github/blob/main/ROADMAP.md): the maintenance work planned for the next twelve months and the work that is explicitly excluded.
+- [Handling of dependency and code analysis findings](https://github.com/netresearch/.github/blob/main/SECURITY.md#handling-of-dependency-and-code-analysis-findings): which vulnerability, licence and static-analysis findings block a pull request, the remediation deadlines for the others, and how exceptions are recorded and reviewed.
+- [Secret management](https://github.com/netresearch/.github/blob/main/SECURITY.md#secret-management): where CI and release secrets are stored, who can access them, and when they are rotated.
+- [Access roster](https://github.com/netresearch/.github/blob/main/docs/access-roster.md): the accounts that hold admin, maintain or write access to the repositories and to the organisation.
+
+Pull requests in this repository run the checks of `.github/workflows/ci.yml` (see [Tests](#tests)): PHP lint, code style, PHPStan, Rector and Fractor dry-runs and the unit tests. The repository does not call the shared security workflows of `netresearch/.github`: no dependency review, Composer Audit, SAST or secret scanning runs on pull requests. Dependabot (`.github/dependabot.yml`) opens daily update pull requests for the Composer dependencies.
+
 ## Making Trivial Changes
 
 For changes of a trivial nature, it is not always necessary to create a new issue.
