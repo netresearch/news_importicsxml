@@ -65,6 +65,8 @@ This repository is Netresearch's fork of [georgringer/news_importicsxml](https:/
 
 Pull requests in this repository run the checks of `.github/workflows/ci.yml` (see [Tests](#tests)): PHP lint, code style, PHPStan, Rector and Fractor dry-runs and the unit tests. The repository does not call the shared security workflows of `netresearch/.github`: no dependency review, Composer Audit, SAST or secret scanning runs on pull requests. Dependabot (`.github/dependabot.yml`) opens daily update pull requests for the Composer dependencies.
 
+The architecture, the security guarantees and limitations, and the threat model of the extension are described in [docs/SECURITY-ASSURANCE.md](docs/SECURITY-ASSURANCE.md). A pull request that adds an entry point, an external fetch, a new place where files are written or a new stored field updates that document.
+
 ## Making Trivial Changes
 
 For changes of a trivial nature, it is not always necessary to create a new issue.

@@ -161,6 +161,11 @@ Option ``--cleanBeforeImport``: before the import, the records on the target pag
 Further information
 ^^^^^^^^^^^^^^^^^^^
 
+Security
+--------
+`docs/SECURITY-ASSURANCE.md <docs/SECURITY-ASSURANCE.md>`_ describes the architecture of the extension, the security guarantees and limitations users can expect, the threat model and the countermeasures in the code.
+Report vulnerabilities privately as described in the `security policy <https://github.com/netresearch/.github/blob/main/SECURITY.md>`_.
+
 Debugging
 ---------
 This extensions used the logging API of TYPO3 CMS. You can find some basic information in the log files (default `typo3temp/var/logs/typo3_****.log`).
