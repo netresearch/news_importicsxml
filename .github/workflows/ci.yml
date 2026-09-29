@@ -1,4 +1,5 @@
 # Adapted from https://github.com/TYPO3GmbH/blog/blob/master/.github/workflows/ci.yml
+# SPDX-License-Identifier: GPL-2.0-or-later
 name: CI
 
 on:

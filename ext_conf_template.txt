@@ -1,2 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+
 # cat=records/enable/101; type=string; label=Import directory
 importPath = /uploads/tx_newsimporticsxml/

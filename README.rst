@@ -1,3 +1,5 @@
+.. SPDX-License-Identifier: GPL-2.0-or-later
+
 .. |version| image:: https://img.shields.io/github/v/release/netresearch/news_importicsxml
    :target: https://github.com/netresearch/news_importicsxml/releases/latest
    :alt: Latest version
