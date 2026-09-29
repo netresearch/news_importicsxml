@@ -28,8 +28,8 @@
     ],
     "support": {
         "email": "support@netresearch.net",
-        "issues": "https://github.com/netresearch/news-importicsxml/issues",
-        "source": "https://github.com/netresearch/news-importicsxml"
+        "issues": "https://github.com/netresearch/news_importicsxml/issues",
+        "source": "https://github.com/netresearch/news_importicsxml"
     },
     "config": {
         "bin-dir": ".build/bin",
