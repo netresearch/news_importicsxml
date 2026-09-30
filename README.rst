@@ -74,7 +74,7 @@ Option ``--format``: either ``xml`` or ``ics``. Any other value stops the import
 
 Path
 """"
-Argument ``path``: a local path like `fileadmin/data.xml` or any URL like `https://typo3.org/xml-feeds/rss.xml`.
+Argument ``path``: with ``--format=xml`` a URL like `https://typo3.org/xml-feeds/rss.xml` (the feed is always fetched over HTTP); with ``--format=ics`` a URL or a local path relative to the public directory like `fileadmin/data.ics`.
 
 Page ID
 """""""
