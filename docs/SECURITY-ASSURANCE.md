@@ -27,8 +27,8 @@ Vulnerabilities are reported privately as described in the [security policy of t
 | Console command | `Classes/Command/ImportCommand.php`, registered in `Configuration/Services.yaml` as `news:importicsxml` | Reads the `path` argument and the options into a `TaskConfiguration` and starts the import job. |
 | Import configuration | `Classes/Domain/Model/Dto/TaskConfiguration.php` | Holds path, format, page id, category mapping (`uid:title` entries separated by `|`) and the flags. |
 | Import job | `Classes/Jobs/ImportJob.php` | Selects the XML or ICS mapper by format, rejects any other format with an exception, and passes the mapped records to EXT:news. |
-| XML mapper | `Classes/Mapper/XmlMapper.php` | Reads RSS/Atom feeds with `laminas/laminas-feed`, maps entries to news records, downloads enclosures whose declared MIME type is JPEG, GIF, PNG or PDF into the import directory. |
-| ICS mapper | `Classes/Mapper/IcsMapper.php` | Downloads remote ICS files to a temporary file (or uses a local file below the public directory), parses them with `johngrogg/ics-parser` and maps events to news records. |
+| XML mapper | `Classes/Mapper/XmlMapper.php` | Reads RSS/Atom feeds with `laminas/laminas-feed`, maps entries to news records, downloads enclosures whose declared MIME type is JPEG, GIF, PNG or PDF and saves them as files. |
+| ICS mapper | `Classes/Mapper/IcsMapper.php` | Downloads remote ICS files to a temporary file (or reads a local path relative to the public directory), parses them with `johngrogg/ics-parser` and maps events to news records. |
 | Shared mapper code | `Classes/Mapper/AbstractMapper.php` | Reads the extension configuration, removes earlier imported records when `--cleanBeforeImport` is set, logs through PSR-3. |
 | Import listener | `Classes/EventListener/NewsImportListener.php` | On EXT:news' `NewsImportPostHydrateEvent`, stores the import metadata as JSON in the field `news_import_data` (`Classes/Domain/Model/News.php`, `ext_tables.sql`). |
 | Backend form element | `Classes/Backend/Form/Element/JsonElement.php`, registered in `ext_localconf.php`; field defined in `Configuration/TCA/Overrides/tx_news_domain_model_news.php` | Shows `news_import_data` read-only in the news record form. |
@@ -37,8 +37,8 @@ Vulnerabilities are reported privately as described in the [security policy of t
 ### Data flow
 
 1. The operator starts `news:importicsxml <path> --format=xml|ics --pid=<id>` from the shell or through the scheduler task "Execute console commands".
-2. XML: `XmlMapper` passes the path to `Laminas\Feed\Reader\Reader::import()`, which fetches it with the `laminas/laminas-http` client. For each entry with an enclosure of one of these declared MIME types, the file is fetched with `GeneralUtility::getUrl()` and written below the public directory, in the directory set by the extension setting `importPath` (`ext_conf_template.txt`, default `/uploads/tx_newsimporticsxml/`).
-3. ICS: `IcsMapper` fetches an `http://` or `https://` path with `GeneralUtility::getUrl()` and writes it to a temporary file in the public `typo3temp/` directory, which it deletes after the events were mapped. Any other path is read as a file below the public directory.
+2. XML: `XmlMapper` passes the path to `Laminas\Feed\Reader\Reader::import()`, which fetches it with the `laminas/laminas-http` client. For each entry with an enclosure of one of these declared MIME types, the file is fetched with `GeneralUtility::getUrl()` and saved with `GeneralUtility::writeFile()`.
+3. ICS: `IcsMapper` fetches an `http://` or `https://` path with `GeneralUtility::getUrl()` and writes it to a temporary file in the public `typo3temp/` directory, which it deletes after the events were mapped. Any other path is read as a file, relative to the public directory.
 4. The mapper returns one array per entry or event. `ImportJob` hands the list to `NewsImportService::import()`, which writes the news records on the configured page.
 5. `NewsImportListener` stores the import metadata (source URL, import date, entry identifiers and, for ICS, the raw event fields) as JSON in `news_import_data`.
 6. An editor who opens the record sees the metadata rendered by `JsonElement`.
@@ -53,7 +53,7 @@ Vulnerabilities are reported privately as described in the [security policy of t
 
 ## What users cannot expect
 
-- **The extension does not judge the feed content.** Titles, texts, links, categories and enclosures are taken from the feed as delivered, and the imported records are published unless the page or EXT:news settings prevent it (`hidden` is set to `0` in both mappers). Configure only feeds whose provider you trust with the content of your site, and prefer `https://` URLs.
+- **The extension does not judge the feed content.** Titles, texts, links, categories and enclosures are taken from the feed as delivered, and the imported records are published unless the page or EXT:news settings prevent it (`hidden` is set to `0` in both mappers). Configure only feeds whose provider, and the network path to it, you trust with your site, and use `https://` URLs.
 - **No authentication towards the feed.** The command has no option for credentials or client certificates.
 - **Network settings differ between the two formats.** ICS files and XML enclosures are fetched with `GeneralUtility::getUrl()`, which uses TYPO3's HTTP settings (`$GLOBALS['TYPO3_CONF_VARS']['HTTP']`). XML feeds are fetched by the `laminas/laminas-http` client, which does not read these settings, for example a configured proxy.
 - **Local paths are not restricted.** A local path is resolved relative to the public directory without further checks (`IcsMapper::getFileContent()`); the operator who configures the path is trusted with it.
