@@ -70,7 +70,7 @@ The command takes these arguments and options:
 
 Format
 """"""
-Option ``--format``: either ``xml`` or ``ics``. Any other value stops the import with an error.
+Option ``--format``: either ``xml`` or ``ics``, in any letter case. Any other value stops the import with an error.
 
 Path
 """"
