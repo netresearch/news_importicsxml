@@ -49,7 +49,7 @@ Vulnerabilities are reported privately as described in the [security policy of t
 - **Imported data goes through TYPO3 and EXT:news APIs.** News records are written by `NewsImportService` through Extbase persistence; the only direct database write of this extension, the removal of earlier imported records, uses Doctrine DBAL's `Connection::delete()` with an array of criteria, which DBAL (4.4.5 at the time of writing) turns into `column = ?` placeholders with bound values (`Classes/Mapper/AbstractMapper.php`).
 - **Stored import metadata is shown escaped.** `JsonElement` decodes the JSON with `JSON_THROW_ON_ERROR` and renders it with `DebugUtility::viewArray()`, which uses Extbase's `DebuggerUtility` and escapes values with `htmlspecialchars()`. The field is read-only and marked `exclude`, so editors see it only when their group is granted the field (`Configuration/TCA/Overrides/tx_news_domain_model_news.php`).
 - **XML feeds with a DOCTYPE are rejected.** `laminas/laminas-feed` (2.26.2 at the time of writing) parses the feed without entity substitution and refuses any document that contains a DOCTYPE node before an entry is mapped (`Reader::importString()`), so the feed cannot declare external entities or entity expansions.
-- **Unsupported formats stop the import.** `ImportJob::run()` throws an `UnexpectedValueException` for any format other than `xml` or `ics`, compared case-insensitively (tested in `Tests/Unit/Jobs/ImportJobTest.php`).
+- **Unsupported formats stop the import.** `ImportJob::run()` throws an `UnexpectedValueException` for any format other than `xml` or `ics`, compared case-insensitively; `Tests/Unit/Jobs/ImportJobTest.php` tests the rejection of an unknown format.
 
 ## What users cannot expect
 
