@@ -15,7 +15,7 @@
 
 TYPO3 CMS Extension "news_importicsxml"
 =======================================
-This extensions provides an import interface for `xml` and `ics` files which can either be located on the same server or reached via URL.
+This extensions provides an import interface for `xml` files reached via URL and `ics` files which can either be located on the same server or reached via URL.
 The import is done by the console command ``news:importicsxml``, which the scheduler can run periodically.
 
 **Requirements**
