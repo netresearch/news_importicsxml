@@ -32,12 +32,7 @@ The import is done by the console command ``news:importicsxml``, which the sched
 Screenshots
 ^^^^^^^^^^^
 
-**Screenshot #1:** Creation of an import task
-
-.. figure:: Resources/Public/Documentation/screenshot-task.png
-		:alt: Creation of an import task
-
-**Screenshot #2:** Metadata of an imported ICS item
+Metadata of an imported ICS item:
 
 .. figure:: Resources/Public/Documentation/screenshot-import-ics.png
 		:alt: Metadata of an imported ics item
