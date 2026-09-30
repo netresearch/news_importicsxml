@@ -21,10 +21,10 @@ email, or any other method with the owners of this repository before making a ch
     `master` branch.
 * Make commits of logical units.
 * Use `composer ci:cgl` to make sure the code is formatted correctly (configuration: `Build/.php-cs-fixer.dist.php`).
-* Make sure your commit messages are in the proper format. Use either `[TASK]`, `[FEATURE]`, `[BUGFIX]` or `[DOC]`
+* Write commit messages in the [Conventional Commits](https://www.conventionalcommits.org/) format, for example `feat:`, `fix:`, `docs:`, `chore:` or `ci:`
 
 ````
-    [TASK] Make the example in CONTRIBUTING imperative and concrete
+    docs: make the example in CONTRIBUTING imperative and concrete
 
     The first line is a real life imperative statement.
     The body describes the behavior without the patch,
