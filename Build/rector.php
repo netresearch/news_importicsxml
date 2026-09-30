@@ -3,6 +3,8 @@
 /**
  * This file is part of the package georgringer/news-importicsxml.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * For the full copyright and license information, please read the
  * LICENSE file that was distributed with this source code.
  */
@@ -47,7 +49,6 @@ return static function (RectorConfig $rectorConfig): void {
         SetList::EARLY_RETURN,
         SetList::INSTANCEOF,
         SetList::PRIVATIZATION,
-        SetList::STRICT_BOOLEANS,
         SetList::TYPE_DECLARATION,
         LevelSetList::UP_TO_PHP_84,
         Typo3LevelSetList::UP_TO_TYPO3_13,

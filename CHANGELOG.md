@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: Netresearch DTT GmbH
+SPDX-License-Identifier: GPL-2.0-or-later
+-->
+
 # 7.0.0
 
 ## BREAKING

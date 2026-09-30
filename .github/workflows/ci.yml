@@ -1,4 +1,5 @@
 # Adapted from https://github.com/TYPO3GmbH/blog/blob/master/.github/workflows/ci.yml
+# SPDX-License-Identifier: GPL-2.0-or-later
 name: CI
 
 on:
@@ -18,11 +19,11 @@ jobs:
         steps:
             -   id: checkout
                 name: Checkout
-                uses: actions/checkout@v4
+                uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
             -   id: setup_php
                 name: Set up PHP version ${{ matrix.php }}
-                uses: shivammathur/setup-php@v2
+                uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
                 with:
                     php-version: ${{ matrix.php }}
                     tools: composer:v2, php-cs-fixer
@@ -38,7 +39,7 @@ jobs:
 
             -   id: composer-cache-dependencies
                 name: Cache Composer dependencies
-                uses: actions/cache@v4
+                uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
                 with:
                     path: ${{ steps.composer-cache-vars.outputs.dir }}
                     key: ${{ runner.os }}-composer-${{ matrix.php }}-${{ matrix.typo3 }}-${{ steps.composer-cache-vars.outputs.timestamp }}

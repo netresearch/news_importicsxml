@@ -3,6 +3,8 @@
 /**
  * This file is part of the package georgringer/news-importicsxml.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * For the full copyright and license information, please read the
  * LICENSE file that was distributed with this source code.
  */
@@ -35,6 +37,8 @@ if (PHP_SAPI !== 'cli') {
 
 $header = <<<EOF
 This file is part of the package georgringer/news-importicsxml.
+
+SPDX-License-Identifier: GPL-2.0-or-later
 
 For the full copyright and license information, please read the
 LICENSE file that was distributed with this source code.

@@ -1,8 +1,10 @@
+.. SPDX-License-Identifier: GPL-2.0-or-later
+
 .. |version| image:: https://img.shields.io/github/v/release/netresearch/news_importicsxml
    :target: https://github.com/netresearch/news_importicsxml/releases/latest
    :alt: Latest version
 .. |license| image:: https://img.shields.io/github/license/netresearch/news_importicsxml
-   :target: https://github.com/netresearch/news_importicsxml/blob/main/LICENSE.md
+   :target: https://github.com/netresearch/news_importicsxml/blob/master/LICENSE.md
    :alt: License
 .. |ci| image:: https://github.com/netresearch/news_importicsxml/actions/workflows/ci.yml/badge.svg
    :target: https://github.com/netresearch/news_importicsxml/actions/workflows/ci.yml
@@ -13,8 +15,8 @@
 
 TYPO3 CMS Extension "news_importicsxml"
 =======================================
-This extensions provides an import interface for `xml` and `ics` files which can either be located on the same server or reached via URL.
-The import is done by the scheduler.
+This extensions provides an import interface for `xml` files reached via URL and `ics` files which can either be located on the same server or reached via URL.
+The import is done by the console command ``news:importicsxml``, which the scheduler can run periodically.
 
 **Requirements**
 
@@ -30,12 +32,7 @@ The import is done by the scheduler.
 Screenshots
 ^^^^^^^^^^^
 
-**Screenshot #1:** Creation of an import task
-
-.. figure:: Resources/Public/Documentation/screenshot-task.png
-		:alt: Creation of an import task
-
-**Screenshot #2:** Metadata of an imported ICS item
+Metadata of an imported ICS item:
 
 .. figure:: Resources/Public/Documentation/screenshot-import-ics.png
 		:alt: Metadata of an imported ics item
@@ -58,20 +55,25 @@ Download and install the extension with the extension manager module.
 
 Configuration
 -------------
-After installing the extension, switch to the module **scheduler** and create a new task **Import news**.
-These additional fields are available:
+The import runs as the console command ``news:importicsxml`` (``Classes/Command/ImportCommand.php``).
+Run it from the command line, or switch to the module **scheduler**, create a task of the class **Execute console commands** and select ``news:importicsxml``.
+Example: ::
+
+	vendor/bin/typo3 news:importicsxml https://typo3.org/xml-feeds/rss.xml --format=xml --pid=12 --mapping="5:Sports|17:Tech"
+
+The command takes these arguments and options:
 
 Format
 """"""
-Select either *XML* or *ICS* to import an ICS file or an XML file.
+Option ``--format``: either ``xml`` or ``ics``, in any letter case. Any other value stops the import with an error.
 
 Path
 """"
-Define a local path like `fileadmin/data.xml` or any URL like `https://typo3.org/xml-feeds/rss.xml`.
+Argument ``path``: with ``--format=xml`` a URL like `https://typo3.org/xml-feeds/rss.xml` (the feed is always fetched over HTTP); with ``--format=ics`` a URL or a local path relative to the public directory like `fileadmin/data.ics`.
 
 Page ID
 """""""
-Define a page id where the new records will be saved.
+Option ``--pid``: the page id where the new records will be saved.
 
 Category mapping
 """""""""""""""""""""""""""
@@ -128,26 +130,38 @@ An ICS entry with a category can look like this: ::
 	END:VEVENT
 	END:VCALENDAR
 
+Option ``--mapping`` takes the category mapping. Separate the entries with ``|``; each entry is ``<category uid>:<category title>``.
 A possible category mapping would look like this: ::
 
-	5:Sports
-	17:Tech
-	17:Information
+	5:Sports|17:Tech|17:Information
 
 As a result, the imported news record will belong to the categories of the IDs *5 & 17*.
 
 Email notification
 """"""""""""""""""
-Add an email address which will get notified after each run.
+Option ``--email``: an email address which will get notified after each run.
 
 **Important**: This feature is not yet implemented!
 
 Persist article with type external page
 """""""""""""""""""""""""""""""""""""""
-If set, the news article is saved with the type "External Url".
+Option ``--persistAsExternalUrl``: the news article is saved with the type "External Url". This applies to XML feeds only.
+
+Generate the URL segment
+""""""""""""""""""""""""
+Option ``--slug``: EXT:news generates the URL segment (``path_segment``) of each imported record that has none yet.
+
+Remove previously imported records
+""""""""""""""""""""""""""""""""""
+Option ``--cleanBeforeImport``: before the import, the records on the target page that an earlier import of the same format created are deleted.
 
 Further information
 ^^^^^^^^^^^^^^^^^^^
+
+Security
+--------
+`docs/SECURITY-ASSURANCE.md <docs/SECURITY-ASSURANCE.md>`_ describes the architecture of the extension, the security guarantees and limitations users can expect, the threat model and the countermeasures in the code.
+Report vulnerabilities privately as described in the `security policy <https://github.com/netresearch/.github/blob/main/SECURITY.md>`_.
 
 Debugging
 ---------

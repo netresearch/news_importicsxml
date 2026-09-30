@@ -28,8 +28,8 @@
     ],
     "support": {
         "email": "support@netresearch.net",
-        "issues": "https://github.com/netresearch/news-importicsxml/issues",
-        "source": "https://github.com/netresearch/news-importicsxml"
+        "issues": "https://github.com/netresearch/news_importicsxml/issues",
+        "source": "https://github.com/netresearch/news_importicsxml"
     },
     "config": {
         "bin-dir": ".build/bin",
@@ -114,7 +114,7 @@
             "@ci:fractor --dry-run"
         ],
         "ci:test:php:unit": [
-            "XDEBUG_MODE=coverage && phpunit -c Build/UnitTests.xml"
+            "XDEBUG_MODE=coverage phpunit -c Build/UnitTests.xml"
         ],
         "ci:test": [
             "@ci:test:php:lint",
