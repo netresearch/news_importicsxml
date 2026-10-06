@@ -81,7 +81,7 @@ class IcsMapper extends AbstractMapper
                 'import_source' => $this->getImportSource(),
                 'import_id'     => $id . '-' . $idCount[$id],
                 'crdate'        => $crdate,
-                'cruser_id'     => $GLOBALS['BE_USER'] ?? $GLOBALS['BE_USER']->user['uid'] ?? 0,
+                'cruser_id'     => isset($GLOBALS['BE_USER'], $GLOBALS['BE_USER']->user) ? $GLOBALS['BE_USER']->user['uid'] : 0,
                 'type'          => 0,
                 'hidden'        => 0,
                 'pid'           => $configuration->getPid(),

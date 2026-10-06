@@ -49,7 +49,7 @@ composer ci:test
 
 `composer ci:test` runs, in this order: PHP lint (`ci:test:php:lint`), PHPStan level 6 with the strict and deprecation rules (`ci:test:php:phpstan`), Rector and Fractor dry-runs (`ci:test:php:rector`, `ci:test:php:fractor`), the PHPUnit unit tests (`ci:test:php:unit`) and the code style check (`ci:test:php:cgl`). Each step can also be run on its own with the script name in brackets.
 
-The unit tests cover the import configuration (`Tests/Unit/Domain/Model/Dto/TaskConfigurationTest.php`), the selection of the XML or ICS mapper and the error for an unsupported format (`Tests/Unit/Jobs/ImportJobTest.php`), and the labels of the console command's argument and options (`Tests/Unit/Command/ImportCommandTest.php`). The mappers themselves have no tests yet.
+The unit tests cover the import configuration (`Tests/Unit/Domain/Model/Dto/TaskConfigurationTest.php`), the selection of the XML or ICS mapper and the error for an unsupported format (`Tests/Unit/Jobs/ImportJobTest.php`), the labels of the console command's argument and options (`Tests/Unit/Command/ImportCommandTest.php`), how the XML mapper fetches and stores enclosures (`Tests/Unit/Mapper/XmlMapperTest.php`) and the creating user the ICS mapper sets (`Tests/Unit/Mapper/IcsMapperTest.php`). The remaining field mapping of both mappers has no tests yet.
 
 The workflow `.github/workflows/ci.yml` runs the same checks on every push and every pull request, for PHP 8.3 and 8.4 with TYPO3 13. Each check is its own step, so a red run names the failing check; PHPStan findings are also shown as annotations on the changed lines. PHPUnit lists each failing test with its assertion message and the file and line of the assertion.
 
