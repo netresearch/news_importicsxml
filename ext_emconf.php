@@ -23,7 +23,7 @@ $EM_CONF['news_importicsxml'] = [
     'constraints'    => [
         'depends' => [
             'typo3' => '13.4.0-13.99.99',
-            'news'  => '12.0.0-12.99.99',
+            'news'  => '12.3.0-12.99.99',
         ],
         'conflicts' => [
         ],
