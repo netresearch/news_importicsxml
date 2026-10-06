@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace GeorgRinger\NewsImporticsxml\Mapper;
 
+use finfo;
 use GeorgRinger\NewsImporticsxml\Domain\Model\Dto\TaskConfiguration;
 use Laminas\Feed\Reader\Collection\Category;
 use Laminas\Feed\Reader\Entry\Atom;
@@ -21,6 +22,7 @@ use Laminas\Feed\Reader\Reader;
 use TYPO3\CMS\Core\Context\Exception\AspectNotFoundException;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\PathUtility;
 
 use function in_array;
 use function sprintf;
@@ -31,6 +33,28 @@ use function strlen;
  */
 class XmlMapper extends AbstractMapper
 {
+    /**
+     * Content types of enclosures that are downloaded, with the extension of the stored file.
+     *
+     * @var array<string, string>
+     */
+    private const array ENCLOSURE_TYPES = [
+        'image/jpeg'      => 'jpg',
+        'image/gif'       => 'gif',
+        'image/png'       => 'png',
+        'application/pdf' => 'pdf',
+    ];
+
+    /**
+     * Content types that feeds declare for one of the types above.
+     *
+     * @var array<string, string>
+     */
+    private const array ENCLOSURE_TYPE_ALIASES = [
+        'image/jpg'   => 'image/jpeg',
+        'image/pjpeg' => 'image/jpeg',
+    ];
+
     /**
      * @param TaskConfiguration $configuration
      *
@@ -105,6 +129,13 @@ class XmlMapper extends AbstractMapper
     }
 
     /**
+     * Downloads the enclosure of a feed entry into the import directory and adds it to the news item.
+     *
+     * Only http(s) URLs are fetched. The file is stored in a folder of the configured import directory that
+     * belongs to the feed; its name is built from the last segment of the URL path, reduced to letters, digits,
+     * "_" and "-", and its extension is taken from the content type detected in the downloaded data, which
+     * has to match the type declared in the feed.
+     *
      * @param array<string, mixed> $singleItem
      * @param object               $enclosure
      * @param string               $xmlPath
@@ -113,50 +144,144 @@ class XmlMapper extends AbstractMapper
      */
     protected function addRemoteFiles(array &$singleItem, object $enclosure, string $xmlPath): void
     {
-        $extensions = [
-            'image/jpg'       => 'jpg',
-            'image/jpeg'      => 'jpg',
-            'image/gif'       => 'gif',
-            'image/png'       => 'png',
-            'application/pdf' => 'pdf',
-        ];
+        $url          = trim((string) ($enclosure->url ?? ''));
+        $declaredType = strtolower(trim((string) ($enclosure->type ?? '')));
+        $declaredType = self::ENCLOSURE_TYPE_ALIASES[$declaredType] ?? $declaredType;
 
-        $targetPath = trim($this->extensionConfiguration['importPath'] ?? '', '/');
-        $targetPath = $targetPath !== '' ? $targetPath : 'uploads/tx_newsimporticsxml';
-        $targetPath = '/' . $targetPath . '/';
+        if (($url === '') || !isset(self::ENCLOSURE_TYPES[$declaredType])) {
+            return;
+        }
 
-        $url      = $enclosure->url;
-        $mimeType = $enclosure->type;
+        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
 
-        if (($url !== '') && isset($extensions[$mimeType])) {
-            $urlInfo  = parse_url($url);
-            $fileInfo = pathinfo($urlInfo['path']);
-            $path     = $targetPath . substr(md5($xmlPath), 0, 10) . $fileInfo['dirname'] . '/';
+        if (!in_array($scheme, ['http', 'https'], true)) {
+            $this->logWarning(sprintf('Enclosure "%s" skipped: only http and https URLs are fetched', $url));
 
-            GeneralUtility::mkdir_deep(Environment::getPublicPath() . $path);
+            return;
+        }
 
-            $file = $path . rawurldecode($fileInfo['basename']);
+        $directory = $this->getEnclosureDirectory($xmlPath);
 
-            if (is_file(Environment::getPublicPath() . '/' . $file)) {
-                $status = true;
-            } else {
-                $content = GeneralUtility::getUrl($url);
-                $status  = GeneralUtility::writeFile(Environment::getPublicPath() . '/' . $file, $content);
+        if ($directory === null) {
+            $this->logWarning('Enclosures skipped: the configured import directory is not a folder of the public directory');
+
+            return;
+        }
+
+        $extension    = self::ENCLOSURE_TYPES[$declaredType];
+        $file         = $directory . $this->getEnclosureFileName($url) . '.' . $extension;
+        $absoluteFile = $this->getPublicPath() . $file;
+
+        if (!is_file($absoluteFile)) {
+            $content = $this->fetchEnclosure($url);
+
+            if (($content === false) || ($content === '')) {
+                $this->logWarning(sprintf('Enclosure "%s" skipped: the download returned no content', $url));
+
+                return;
             }
 
-            if ($status) {
-                if (in_array($extensions[$mimeType], ['gif', 'jpeg', 'jpg', 'png'], true)) {
-                    $singleItem['media'][] = [
-                        'image'         => $file,
-                        'showinpreview' => true,
-                    ];
-                } else {
-                    $singleItem['related_files'][] = [
-                        'file' => $file,
-                    ];
-                }
+            $detectedType = (string) (new finfo(FILEINFO_MIME_TYPE))->buffer($content);
+
+            if ((self::ENCLOSURE_TYPES[$detectedType] ?? null) !== $extension) {
+                $this->logWarning(
+                    sprintf(
+                        'Enclosure "%s" skipped: the feed declares "%s", the downloaded content is "%s"',
+                        $url,
+                        $declaredType,
+                        $detectedType
+                    )
+                );
+
+                return;
+            }
+
+            GeneralUtility::mkdir_deep($this->getPublicPath() . $directory);
+
+            if (!GeneralUtility::writeFile($absoluteFile, $content)) {
+                $this->logWarning(sprintf('Enclosure "%s" skipped: the file "%s" could not be written', $url, $file));
+
+                return;
             }
         }
+
+        if ($extension === 'pdf') {
+            $singleItem['related_files'][] = [
+                'file' => $file,
+            ];
+        } else {
+            $singleItem['media'][] = [
+                'image'         => $file,
+                'showinpreview' => true,
+            ];
+        }
+    }
+
+    /**
+     * Returns the folder for the enclosures of a feed, relative to the public directory, with leading and
+     * trailing slash, or NULL if the configured import directory is not a folder of the public directory.
+     *
+     * @param string $xmlPath
+     */
+    protected function getEnclosureDirectory(string $xmlPath): ?string
+    {
+        $importPath = trim((string) ($this->extensionConfiguration['importPath'] ?? ''), '/');
+        $importPath = $importPath !== '' ? $importPath : 'uploads/tx_newsimporticsxml';
+
+        $directory = '/' . $importPath . '/' . substr(md5($xmlPath), 0, 10) . '/';
+
+        if (!GeneralUtility::validPathStr($directory) || str_contains($directory, '/./')) {
+            return null;
+        }
+
+        $publicPath = PathUtility::getCanonicalPath($this->getPublicPath());
+        $canonical  = PathUtility::getCanonicalPath($publicPath . $directory);
+
+        if (!str_starts_with($canonical . '/', $publicPath . '/' . $importPath . '/')) {
+            return null;
+        }
+
+        return $directory;
+    }
+
+    /**
+     * Returns the file name (without extension) for an enclosure: the last segment of the URL path reduced to
+     * letters, digits, "_" and "-", followed by a hash of the URL that keeps files with the same name apart.
+     *
+     * @param string $url
+     *
+     * @return string
+     */
+    protected function getEnclosureFileName(string $url): string
+    {
+        $segment = rawurldecode((string) parse_url($url, PHP_URL_PATH));
+        $segment = basename(str_replace('\\', '/', $segment));
+
+        $stem = pathinfo($segment, PATHINFO_FILENAME);
+        $stem = trim((string) preg_replace('/[^A-Za-z0-9_-]+/', '_', $stem), '_-');
+        $stem = substr($stem, 0, 100);
+
+        if ($stem === '') {
+            $stem = 'enclosure';
+        }
+
+        return $stem . '_' . substr(md5($url), 0, 8);
+    }
+
+    /**
+     * @param string $url
+     */
+    protected function fetchEnclosure(string $url): string|false
+    {
+        return GeneralUtility::getUrl($url);
+    }
+
+    /**
+     * @return string
+     */
+    protected function getPublicPath(): string
+    {
+        return Environment::getPublicPath();
     }
 
     /**
