@@ -3,6 +3,21 @@ SPDX-FileCopyrightText: Netresearch DTT GmbH
 SPDX-License-Identifier: GPL-2.0-or-later
 -->
 
+# 7.0.1
+
+## BUGFIX
+
+- 122244f [BUGFIX] Fetch XML feed enclosures only over http and https and store them in the feed's folder of the import directory, named from the URL path's last segment reduced to letters, digits, `_` and `-` plus a hash of the URL, with the file extension of the detected content type (JPEG, GIF, PNG or PDF), which must match the type the feed declares
+- 5a0c181 [BUGFIX] Fetch enclosures with a lower-case URL scheme, so TYPO3's HTTP settings apply
+- 28dfa9c [BUGFIX] ICS import: store the uid of the backend user as creating user, not the user object
+
+## TASK
+
+- 4944451 [TASK] Require EXT:news 12.3 in ext_emconf.php as in composer.json
+- 02e6695 [TASK] Drop the export-ignore rule for the removed .styleci.yml
+- 0906261, 4e199cd, 45a4a6f, e4d965d, f9f4d8a [TASK] GitHub CI workflow, PHPStan and tool version adjustments, README badges
+- OpenSSF best-practice documentation: governance and security policy links, architecture and security assurance document, SPDX notices (#2)
+
 # 7.0.0
 
 ## BREAKING
