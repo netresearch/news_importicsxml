@@ -160,6 +160,9 @@ class XmlMapper extends AbstractMapper
             return;
         }
 
+        // GeneralUtility::getUrl() hands only lower-case schemes to TYPO3's HTTP client
+        $url = $scheme . substr($url, strlen($scheme));
+
         $directory = $this->getEnclosureDirectory($xmlPath);
 
         if ($directory === null) {

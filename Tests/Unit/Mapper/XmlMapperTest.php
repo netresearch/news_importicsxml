@@ -261,12 +261,13 @@ class XmlMapperTest extends UnitTestCase
     }
 
     #[Test]
-    public function schemeIsComparedCaseInsensitively(): void
+    public function upperCaseSchemeIsFetchedWithLowerCaseScheme(): void
     {
-        $item = $this->createSubject(self::PNG)
-            ->addEnclosure('HTTPS://media.example.org/photo.png', 'image/png', self::FEED);
+        $subject = $this->createSubject(self::PNG);
+        $item    = $subject->addEnclosure('HTTPS://media.example.org/Photo.png', 'image/png', self::FEED);
 
         self::assertCount(1, (array) ($item['media'] ?? []));
+        self::assertSame(['https://media.example.org/Photo.png'], $subject->fetchedUrls);
     }
 
     #[Test]

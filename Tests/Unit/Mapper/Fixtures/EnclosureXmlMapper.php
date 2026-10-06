@@ -24,6 +24,11 @@ final class EnclosureXmlMapper extends XmlMapper
 {
     public int $fetchCount = 0;
 
+    /**
+     * @var list<string> URLs passed to fetchEnclosure()
+     */
+    public array $fetchedUrls = [];
+
     private string|false $response = false;
 
     private string $publicPath = '';
@@ -69,6 +74,7 @@ final class EnclosureXmlMapper extends XmlMapper
     protected function fetchEnclosure(string $url): string|false
     {
         ++$this->fetchCount;
+        $this->fetchedUrls[] = $url;
 
         return $this->response;
     }
